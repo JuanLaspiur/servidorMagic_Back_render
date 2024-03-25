@@ -74,7 +74,7 @@ class QuedadaController {
       console.error('Quedada by id: ' + error.name + ': ' + error.message);
     }
   }
-
+//obtener informacion de la quedada.
   async quedadaInfo ({ params, request, response, view }) {
     try {
       let data = (await Quedada.find(params.id))

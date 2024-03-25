@@ -59,6 +59,23 @@ addPrefixToGroup(
     Route.put("acceso_actualizar_pass/:code", "UserController.accesoActualizarPass")
     Route.put("offline_user", "UserController.offlineUser")
     Route.put('update_user_info_new_user/:id', 'UserController.updateUserInfoNewUser')
+
+    // Rutas para las encuestas
+    Route.get('encuestas', 'EncuestaController.index') 
+    Route.get('encuestas/:id', 'EncuestaController.show') 
+    Route.post('encuestas', 'EncuestaController.store') // Crear una nueva encuesta
+    Route.put('encuestas/:id', 'EncuestaController.update') // Actualizar una encuesta existente
+    Route.delete('encuestas/:id', 'EncuestaController.destroy') 
+
+    // Rutas para las encuestas de administrador
+Route.get('encuestas-admin', 'EncuestaAdminController.index') // Mostrar todas las encuestas de administrador
+Route.get('encuestas-admin/:id', 'EncuestaAdminController.show') // Mostrar una encuesta de administrador por su ID
+Route.post('encuestas-admin', 'EncuestaAdminController.store') // Crear una nueva encuesta de administrador
+Route.put('encuestas-admin/:id', 'EncuestaAdminController.update') // Actualizar una encuesta de administrador existente
+Route.delete('encuestas-admin/:id', 'EncuestaAdminController.destroy') // Eliminar una encuesta de administrador existente
+
+
+
   })
 );
 
