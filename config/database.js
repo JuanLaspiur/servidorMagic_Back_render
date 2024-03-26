@@ -77,24 +77,24 @@ module.exports = {
       password: Env.get('DB_PASSWORD', ''),
       database: Env.get('DB_DATABASE', 'adonis')
     }
-  },
-  mongodb: {
+  },mongodb: {
     client: 'mongodb',
-    connectionString: Env.get('DB_CONNECTION_STRING', ''), // Opcional: cadena de conexión personalizada
+    connectionString: 'mongodb://localhost:27017/',
     connection: {
-      host: Env.get('DB_HOST', 'localhost'),
-      port: Env.get('DB_PORT', 27017),
-      database: Env.get('DB_DATABASE', 'adonis'),
+      host: 'localhost',
+      port: 27017,
+      database: 'adonis',
       options: {
         useUnifiedTopology: true,
-        ssl: Env.get('DB_SSL', true), // Activar SSL según lo configurado en las variables de entorno
-        connectTimeoutMS: Env.get('DB_CONNECT_TIMEOUT_MS', 15000),
-        socketTimeoutMS: Env.get('DB_SOCKET_TIMEOUT_MS', 180000),
-        w: Env.get('DB_W', 0),
-        readPreference: Env.get('DB_READ_PREFERENCE', 'secondary'),
-        authSource: Env.get('DB_AUTH_SOURCE', ''),
-        authMechanism: Env.get('DB_AUTH_MECHANISM', '') 
+        ssl: false, // No se utiliza SSL
+        connectTimeoutMS: 15000,
+        socketTimeoutMS: 180000,
+        w: 0,
+        readPreference: 'secondary',
+        authSource: '',
+        authMechanism: ''
       }
     }
   }
+  
   }

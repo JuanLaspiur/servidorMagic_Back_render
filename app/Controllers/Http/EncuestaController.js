@@ -1,8 +1,8 @@
 'use strict'
 
-const Encuesta = use("App/Models/Encuesta")
-const Opcion = use("App/Models/Opcion")
-const User = use("App/Models/User")
+const Encuesta = use("./../../Models/Encuesta")
+const Opcion = use("./../../Models/OpcionEncuesta")
+const User = use("./../../Models/User")
 
 class EncuestaController {
   /**

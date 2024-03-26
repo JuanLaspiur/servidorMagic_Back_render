@@ -66,6 +66,9 @@ addPrefixToGroup(
     Route.post('encuestas', 'EncuestaController.store') // Crear una nueva encuesta
     Route.put('encuestas/:id', 'EncuestaController.update') // Actualizar una encuesta existente
     Route.delete('encuestas/:id', 'EncuestaController.destroy') 
+//
+Route.post('votacion/opciones/:opcionId/usuarios/:userId', 'EncuestaAdminController.addUserToOption') 
+
 
     // Rutas para las encuestas de administrador
 Route.get('encuestas-admin', 'EncuestaAdminController.index') // Mostrar todas las encuestas de administrador

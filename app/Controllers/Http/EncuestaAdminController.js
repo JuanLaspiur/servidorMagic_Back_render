@@ -48,14 +48,15 @@ class EncuestaAdminController {
       const encuesta = new EncuestaAdmin()
       encuesta.pregunta = pregunta
       await encuesta.save()
-
+  
+      
       for (const opcionText of opciones) {
         const opcion = new OpcionEncuestaAdmin()
         opcion.texto = opcionText
-        opcion.encuesta_id = encuesta.id
+        opcion.encuesta_id = encuesta._id // Asignar el ID de la encuesta a la opción
         await opcion.save()
       }
-
+  
       response.status(201).json({ message: 'Encuesta de administrador creada exitosamente', encuesta })
     } catch (error) {
       console.error('Error al crear la encuesta de administrador:', error.message)
@@ -117,6 +118,41 @@ class EncuestaAdminController {
       response.status(500).json({ error: 'Internal Server Error' })
     }
   }
-}
+
+  // Otras funciones del controlador...
+
+  /**
+   * Agrega un usuario a una opción específica de la encuesta.
+   * POST /encuestas/:encuestaId/opciones/:opcionId/usuarios/:userId
+   */
+  async addUserToOption({ params, response }) {
+    try {
+      const opcion = await OpcionEncuestaAdmin.find(params.opcionId)
+      if (!opcion) {
+        return response.status(404).json({ error: 'Opción not found' })
+      }
+  
+      const user = await User.find(params.userId)
+      if (!user) {
+        return response.status(404).json({ error: 'User not found' })
+      }
+  
+      // Verifica si el usuario ya está asociado a la opción
+      const existingUser = await opcion.usuarios().where('user_id', user.id).first()
+      if (existingUser) {
+        return response.status(400).json({ error: 'User already associated with this option' })
+      }
+  
+      // Asigna el usuario a la opción
+      await opcion.usuarios().attach([user.id])
+  
+      return response.status(200).json({ message: 'Usuario agregado a la opción exitosamente' })
+    } catch (error) {
+      console.error('Error al agregar usuario a la opción:', error.message)
+      return response.status(500).json({ error: 'Internal Server Error' })
+    }
+  }
+}  
+
 
 module.exports = EncuestaAdminController
