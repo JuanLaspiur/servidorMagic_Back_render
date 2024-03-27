@@ -110,104 +110,56 @@ class ChatController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async create ({ request, response, auth, params }) {
-    const user = (await auth.getUser()).toJSON()
-    const activarChat = await Chats.query().where('_id', params.id).update({activo: true})
-    let data = request.all()
-    let image = request.file("file")
-    const fileName = `${UUID()}.${image?.clientName.split(".").pop().toLowerCase()}`
-    let message = {
-      text: data.message,
-      user_id: user._id,
-      chat_id: params.id,
-      textAnswer: data.messageForAnswer
-    }
-    if (image){
-      message.image = fileName
-      const storagePath = path.join(
-        __dirname,
-        "..",
-        "..",
-        "..",
-        "storage",
-        "chat_images"
-      );
+  async create({ request, response, auth, params }) {
+    try {
+      const user = (await auth.getUser()).toJSON();
+      await Chats.query().where('_id', params.id).update({ activo: true });
   
-      if (!fs.existsSync(storagePath)) {
-        fs.mkdirSync(storagePath, { recursive: true });
+      let data = request.all();
+      let image = request.file("file");
+      const fileName = `${UUID()}.${image?.clientName.split(".").pop().toLowerCase()}`;
+      let message = {
+        text: data.message,
+        user_id: user._id,
+        chat_id: params.id,
+        textAnswer: data.messageForAnswer
+      };
+  
+      if (image) {
+        message.image = fileName;
+        const storagePath = path.join(
+          __dirname,
+          "..",
+          "..",
+          "..",
+          "storage",
+          "chat_images"
+        );
+  
+        if (!fs.existsSync(storagePath)) {
+          fs.mkdirSync(storagePath, { recursive: true });
+        }
+  
+        await image.move("./storage/chat_images", {
+          name: fileName,
+          overwrite: true,
+        });
       }
   
-      await image.move("./storage/chat_images", {
-        name: fileName,
-        overwrite: true,
-      });
+      const newMessage = await Messages.create(message);
+  
+      // Asociar una encuesta de administrador al chat si es necesario
+      const encuestaId = data.encuestaId; // Obtener el ID de la encuesta de alguna manera
+      if (encuestaId) {
+        const chat = await Chats.find(params.id);
+        await chat.encuestaAdmin().associate(encuestaId);
+      }
+  
+      // Resto de la lógica para enviar notificaciones y responder al cliente
+    } catch (error) {
+      console.error('Error al crear el chat:', error);
+      return response.status(500).send({ message: 'Se produjo un error al intentar crear el chat.' });
     }
-
-    const newMessage = await Messages.create(message)
-
-    let privado = (await Chats.query().where('_id', params.id).first())
-    if (privado.privado) {
-      // Crear notificacion
-      let toUser = user._id === privado.user_id ? privado.otro_id : privado.user_id
-      let exist = (await Notification.query().where({ perfil: user._id, user_id: toUser, title: 'Nuevo mensaje' }).first())
-      if (exist) {
-        await Notification.query().where({_id: exist._id}).update({visto: false})
-      } else {
-        const notif = {
-          visto: false,
-          user_id: toUser,
-          perfil: user._id,
-          title: 'Nuevo mensaje',
-          message: `${user.name} ${user.last_name ? user.last_name : ''} ha enviado un nuevo mensaje`,
-          ruta: `/chat/${params.id}`
-        }
-        await Notification.create(notif)
-      }
-      Notifications.sendSystemNotification({userId: toUser, title: 'Nuevo mensaje!', message: `${user.name} ${user.last_name} ha enviado un nuevo mensaje` })
-    } else {
-      let evento = await Quedada.query().where({_id: privado.evento_id}).first()
-
-      if (evento.user_id !== user._id) {
-        let toUser = evento.user_id
-          let exist = (await Notification.query().where({ perfil: user._id, user_id: toUser, title: 'Nuevo mensaje' }).first())
-          if (exist) {
-            await Notification.query().where({_id: exist._id}).update({visto: false})
-          } else {
-            const notif = {
-              visto: false,
-              user_id: toUser,
-              perfil: user._id,
-              title: 'Nuevo mensaje',
-              message: `${user.name} ${user.last_name ? user.last_name : ''} ha enviado un nuevo mensaje al evento`,
-              ruta: `/chat/${params.id}`
-            }
-            await Notification.create(notif)
-          }
-          Notifications.sendSystemNotification({userId: toUser, title: 'Nuevo mensaje!', message: `${user.name} ${user.last_name} ha enviado un nuevo mensaje al evento` })
-      }
-
-      for (let i = 0; i < evento.asistentes.length; i++) {
-        if (evento.asistentes[i].user_id !== user._id) {
-          let toUser = evento.asistentes[i].user_id
-          let exist = (await Notification.query().where({ perfil: user._id, user_id: toUser, title: 'Nuevo mensaje' }).first())
-          if (exist) {
-            await Notification.query().where({_id: exist._id}).update({visto: false})
-          } else {
-            const notif = {
-              visto: false,
-              user_id: toUser,
-              perfil: user._id,
-              title: 'Nuevo mensaje',
-              message: `${user.name} ${user.last_name ? user.last_name : ''} ha enviado un nuevo mensaje al evento`,
-              ruta: `/chat/${params.id}`
-            }
-            await Notification.create(notif)
-          }
-          Notifications.sendSystemNotification({userId: toUser, title: 'Nuevo mensaje!', message: `${user.name} ${user.last_name} ha enviado un nuevo mensaje al evento` })
-        }
-      }
-    }
-    response.send(message)
   }
 
   /**

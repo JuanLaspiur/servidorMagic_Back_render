@@ -7,6 +7,9 @@ class Chat extends Model {
   quedadaInfo () {
     return this.hasOne('App/Models/Quedada', 'evento_id', '_id')
   }
+  encuestaAdmin() {
+    return this.hasOne('App/Models/EncuestaAdmin')
+  }
 }
 
 module.exports = Chat
