@@ -1,99 +1,72 @@
 'use strict'
+
 const Category = use("App/Models/Category")
 
-/** @typedef {import('@adonisjs/framework/src/Request')} Request */
-/** @typedef {import('@adonisjs/framework/src/Response')} Response */
-/** @typedef {import('@adonisjs/framework/src/View')} View */
-
-/**
- * Resourceful controller for interacting with Category
- */
 class CategoryController {
-  /**
-   * Show a list of all Category.
-   * GET Category
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async index ({ request, response, view }) {
+  async index ({ response }) {
     try {
-      let data = (await Category.query().where({}).fetch()).toJSON()
-      response.send(data)
+      const categories = await Category.all()
+      response.send(categories)
     } catch (error) {
-      console.error('index Category: ' + error.name + ': ' + error.message);
+      console.error('index Category: ' + error.name + ': ' + error.message)
+      response.status(500).send({ error: 'Error al obtener categorías' })
+    }
+  }
+  async store ({ request, response }) {
+    try {
+      const categoryData = request.only(['id', 'name', 'description', 'icon'])
+      const category = await Category.create(categoryData)
+      response.status(201).send(category)
+    } catch (error) {
+      console.error('store Category: ' + error.name + ': ' + error.message)
+      response.status(500).send({ error: 'Error al crear la categoría' })
     }
   }
 
-  /**
-   * Render a form to be used for creating a new Category.
-   * GET Category/create
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async create ({ request, response, view }) {
+  async show ({ params, response }) {
+    try {
+      const category = await Category.find(params.id)
+      if (!category) {
+        response.status(404).send({ error: 'Categoría no encontrada' })
+        return
+      }
+      response.send(category)
+    } catch (error) {
+      console.error('show Category: ' + error.name + ': ' + error.message)
+      response.status(500).send({ error: 'Error al obtener la categoría' })
+    }
   }
 
-  /**
-   * Create/save a new Category.
-   * POST Category
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async store ({ request, response }) {
-  }
-
-  /**
-   * Display a single Category.
-   * GET Category/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async show ({ params, request, response, view }) {
-  }
-
-  /**
-   * Render a form to update an existing Category.
-   * GET Category/:id/edit
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   * @param {View} ctx.view
-   */
-  async edit ({ params, request, response, view }) {
-  }
-
-  /**
-   * Update Category details.
-   * PUT or PATCH Category/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
   async update ({ params, request, response }) {
+    try {
+      const category = await Category.find(params.id)
+      if (!category) {
+        response.status(404).send({ error: 'Categoría no encontrada' })
+        return
+      }
+      const categoryData = request.only(['name', 'description', 'icon']) // Ajusta esto según los campos de tu modelo
+      category.merge(categoryData)
+      await category.save()
+      response.send(category)
+    } catch (error) {
+      console.error('update Category: ' + error.name + ': ' + error.message)
+      response.status(500).send({ error: 'Error al actualizar la categoría' })
+    }
   }
 
-  /**
-   * Delete a Category with id.
-   * DELETE Category/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async destroy ({ params, request, response }) {
+  async destroy ({ params, response }) {
+    try {
+      const category = await Category.find(params.id)
+      if (!category) {
+        response.status(404).send({ error: 'Categoría no encontrada' })
+        return
+      }
+      await category.delete()
+      response.send({ message: 'Categoría eliminada correctamente' })
+    } catch (error) {
+      console.error('destroy Category: ' + error.name + ': ' + error.message)
+      response.status(500).send({ error: 'Error al eliminar la categoría' })
+    }
   }
 }
 
