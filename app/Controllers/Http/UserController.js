@@ -418,9 +418,8 @@ class UserController {
       if (user.enable) {
         isEnable = "si";
       }
-      if (user.delete) { // Verifica si el usuario tiene el atributo 'delete' y su valor es true
+      if (user.deleted) { // Verifica si el usuario tiene el atributo 'delete' y su valor es true
         isEnable = "no";
-        console.log("Correcto Juancito")
       }
     }
     return isEnable;
@@ -892,8 +891,9 @@ class UserController {
       if (!user) {
         return response.notFound({ error: 'User not found' });
       }
-  
       user.deleted = true;
+      user.dateDeleted = new Date(); // Asigna la fecha actual
+ 
       await user.save();
   
       return response.send({ message: 'User deleted status updated successfully' });
@@ -901,6 +901,7 @@ class UserController {
       return response.status(500).send({ error: 'Internal server error' });
     }
   }
+  
   
 }
 
