@@ -8,7 +8,7 @@ const Model = use('Model')
 
 class User extends Model {
   static get fillable() {
-    return ['email','password']
+    return ['email', 'password', 'deleted'] // Agregamos 'deleted_at' como no requerido
   }
 
   static fieldValidationRules() {
@@ -61,3 +61,4 @@ class User extends Model {
 }
 
 module.exports = User
+

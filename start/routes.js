@@ -31,6 +31,7 @@ const addPrefixToGroup = (group) => {
 addPrefixToGroup(
   Route.group(() => {
     // Insertar rutas sin protección de autenticación aquí
+    Route.put("deleteSimbolic/:id","UserController.updateUserDeletedStatus")
     Route.post("loginByGoogle", "UserController.loginByGoogle");
     Route.post("login", "UserController.login");
     Route.get("testeando_telde", () => {

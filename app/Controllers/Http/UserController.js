@@ -879,6 +879,24 @@ class UserController {
       return response.status(400).send({status:400, message: "Not Users Bloqued"})
     }
   }
+
+  async updateUserDeletedStatus({ params, response }) {
+    try {
+      const user = await User.find(params.id);
+  
+      if (!user) {
+        return response.notFound({ error: 'User not found' });
+      }
+  
+      user.deleted = true;
+      await user.save();
+  
+      return response.send({ message: 'User deleted status updated successfully' });
+    } catch (error) {
+      return response.status(500).send({ error: 'Internal server error' });
+    }
+  }
+  
 }
 
 module.exports = UserController;
