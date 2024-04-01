@@ -418,9 +418,13 @@ class UserController {
       if (user.enable) {
         isEnable = "si";
       }
+      if (user.delete) { // Verifica si el usuario tiene el atributo 'delete' y su valor es true
+        isEnable = 'no';
+      }
     }
     return isEnable;
   }
+  
 
   async login({ auth, request }) {
     const { email, password, deviceToken } = request.all();
