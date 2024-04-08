@@ -28,9 +28,6 @@ const axios = require('axios');
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
-/**
- * Resourceful controller for interacting with users
- */
 const generateLoginData = async (auth, email, password) => {
   let token = await auth.attempt(email, password);
   const user = (await User.findBy("email", email)).toJSON();
@@ -93,17 +90,14 @@ class UserController {
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("Data");
 
-    // Conectar con la base de datos
     const client = await MongoClient.connect(uri, { useNewUrlParser: true });
     const db = client.db(process.env.DB_DATABASE);
 
-    // Obtener los datos de la tabla users
     const data = await db
       .collection("users")
       .find({ roles: [2] })
       .toArray();
 
-    // Configuración de las columnas
     worksheet.columns = [
       { header: "ID", key: "_id", width: 30 },
       { header: "Correo electrónico", key: "email", width: 30 },
@@ -883,7 +877,7 @@ class UserController {
       return response.status(400).send({status:400, message: "Not Users Bloqued"})
     }
   }
-
+ // eliminar simbolica
   async updateUserDeletedStatus({ params, response }) {
     try {
       const user = await User.find(params.id);
@@ -899,6 +893,24 @@ class UserController {
       return response.send({ message: 'User deleted status updated successfully' });
     } catch (error) {
       return response.status(500).send({ error: 'Internal server error' });
+    }
+  }
+  // eliminar real
+  async realEliminarUsuarioPorId({ params, response }) {
+    try {
+      const userId = params.id;
+      const user = await User.find(userId);
+      if (!user) {
+        return response.status(404).send({ message: 'El usuario no existe' });
+      }
+  
+      // Eliminar el usuario
+      await User.query().where('_id', userId).delete();
+  
+      return response.status(200).send({ message: 'Usuario eliminado exitosamente' });
+    } catch (error) {
+      console.error('Error al eliminar usuario:', error);
+      return response.status(500).send({ message: 'Se produjo un error al eliminar el usuario' });
     }
   }
   

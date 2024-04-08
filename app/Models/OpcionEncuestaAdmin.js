@@ -1,5 +1,11 @@
 // Archivo: OpcionEncuestaAdmin.js en app/Models
+/*
 
+
+Por alguna razón no funciona
+
+
+*/
 'use strict'
 
 const Model = use('Model')

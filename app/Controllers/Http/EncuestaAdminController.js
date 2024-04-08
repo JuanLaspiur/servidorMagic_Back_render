@@ -53,7 +53,8 @@ class EncuestaAdminController {
       for (const opcionText of opciones) {
         const opcion = new OpcionEncuestaAdmin()
         opcion.texto = opcionText
-        opcion.encuesta_id = encuesta._id // Asignar el ID de la encuesta a la opción
+        let num =encuesta._id 
+        opcion.encuesta_id = num// Asignar el ID de la encuesta a la opción
         await opcion.save()
       }
   

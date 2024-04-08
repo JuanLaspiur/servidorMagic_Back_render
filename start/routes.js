@@ -30,7 +30,16 @@ const addPrefixToGroup = (group) => {
 
 addPrefixToGroup(
   Route.group(() => {
+//NO FUNCIONAA!!
+//NO FUNCIONAA!!
+//NO FUNCIONAA!!
+//NO FUNCIONAA!!
+    Route.get("opciones_admin123/id/:encuestaId", "OpcionesAdminController.index");
+    Route.get("opciones_admin123/","OpcionesAdminController.getAllOptions");
+    /*falta probar funcionamiento CAMBIAR DE LUGAR NO FUNCIONAA!!*/
+  
     // Insertar rutas sin protección de autenticación aquí
+    Route.delete("eliminarUsuario/:id","UserController.realEliminarUsuarioPorId");
     Route.put("deleteSimbolic/:id","UserController.updateUserDeletedStatus")
     Route.post("loginByGoogle", "UserController.loginByGoogle");
     Route.post("login", "UserController.login");
@@ -93,12 +102,14 @@ addPrefixToGroup(
     Route.post("encuestas-admin", "EncuestaAdminController.store"); // Crear una nueva encuesta de administrador
     Route.put("encuestas-admin/:id", "EncuestaAdminController.update"); // Actualizar una encuesta de administrador existente
     Route.delete("encuestas-admin/:id", "EncuestaAdminController.destroy"); // Eliminar una encuesta de administrador existente
+    
+   
   })
 );
 
 addPrefixToGroup(
   Route.group(() => {
-    // Insertar rutas con protección de autenticación aquí
+    // Insertar rutas con protección de autenticación aquí   
     Route.get("user_info", "UserController.userInfo");
     Route.get("user_info2", "UserController.userInfo2");
     Route.get("user_by_id/:id", "UserController.userById");
