@@ -30,16 +30,27 @@ const addPrefixToGroup = (group) => {
 
 addPrefixToGroup(
   Route.group(() => {
-    // Opciones de administrador
-    Route.get("opciones_admin123/id/:encuestaId", "OpcionesAdminController.index");
+    // Opciones encuesta de administrador
+    Route.get(
+      "opciones_admin123/id/:encuestaId",
+      "OpcionesAdminController.index"
+    );
     Route.get("opciones_admin123/idOpcion/:id", "OpcionesAdminController.show");
-    Route.get("opciones_admin123/","OpcionesAdminController.getAllOptions");
-    Route.post("opciones_admin123/votar", "OpcionesAdminController.votar")
+    Route.get("opciones_admin123/", "OpcionesAdminController.getAllOptions");
+    Route.post("opciones_admin123/votar", "OpcionesAdminController.votar");
 
-  
+    // Opciones encuesta de comun
+    Route.get("opciones/id/:encuestaId", "OpcionesAdminController.index");
+    Route.get("opciones/idOpcion/:id", "OpcionesAdminController.show");
+    Route.get("opciones/", "OpcionesAdminController.getAllOptions");
+    Route.post("opciones/votar", "OpcionesAdminController.votar");
+
     // Insertar rutas sin protección de autenticación aquí
-    Route.delete("eliminarUsuario/:id","UserController.realEliminarUsuarioPorId");
-    Route.put("deleteSimbolic/:id","UserController.updateUserDeletedStatus")
+    Route.delete(
+      "eliminarUsuario/:id",
+      "UserController.realEliminarUsuarioPorId"
+    );
+    Route.put("deleteSimbolic/:id", "UserController.updateUserDeletedStatus");
     Route.post("loginByGoogle", "UserController.loginByGoogle");
     Route.post("login", "UserController.login");
     Route.get("testeando_telde", () => {
@@ -89,6 +100,10 @@ addPrefixToGroup(
     Route.post("encuestas", "EncuestaController.store"); // Crear una nueva encuesta
     Route.put("encuestas/:id", "EncuestaController.update"); // Actualizar una encuesta existente
     Route.delete("encuestas/:id", "EncuestaController.destroy");
+    Route.post(
+      "encuestas/:encuestaId/opcion/:opcionId/usuario/:userId",
+      "EncuestaController.addUserToOption"
+    );
     //
     Route.post(
       "votacion/opciones/:opcionId/usuarios/:userId",
@@ -101,14 +116,12 @@ addPrefixToGroup(
     Route.post("encuestas-admin", "EncuestaAdminController.store"); // Crear una nueva encuesta de administrador
     Route.put("encuestas-admin/:id", "EncuestaAdminController.update"); // Actualizar una encuesta de administrador existente
     Route.delete("encuestas-admin/:id", "EncuestaAdminController.destroy"); // Eliminar una encuesta de administrador existente
-    
-   
   })
 );
 
 addPrefixToGroup(
   Route.group(() => {
-    // Insertar rutas con protección de autenticación aquí   
+    // Insertar rutas con protección de autenticación aquí
     Route.get("user_info", "UserController.userInfo");
     Route.get("user_info2", "UserController.userInfo2");
     Route.get("user_by_id/:id", "UserController.userById");

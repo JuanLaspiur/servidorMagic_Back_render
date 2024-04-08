@@ -1,4 +1,3 @@
-/** @type {typeof import('@adonisjs/lucid/src/Lucid/Model')} */
 const Model = use('Model')
 
 class Encuesta extends Model {
@@ -11,6 +10,8 @@ class Encuesta extends Model {
   opciones() {
     return this.hasMany('App/Models/OpcionEncuesta')
   }
+  
+  // Métodos adicionales
 }
 
-module.exports = Encuesta
+module.exports = Encuesta;
