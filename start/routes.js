@@ -30,15 +30,12 @@ const addPrefixToGroup = (group) => {
 
 addPrefixToGroup(
   Route.group(() => {
-//NO FUNCIONAA!!
-//NO FUNCIONAA!!
-//NO FUNCIONAA!!
-//NO FUNCIONAA!!
+    // Opciones de administrador
     Route.get("opciones_admin123/id/:encuestaId", "OpcionesAdminController.index");
     Route.get("opciones_admin123/idOpcion/:id", "OpcionesAdminController.show");
     Route.get("opciones_admin123/","OpcionesAdminController.getAllOptions");
     Route.post("opciones_admin123/votar", "OpcionesAdminController.votar")
-    /*falta probar funcionamiento CAMBIAR DE LUGAR NO FUNCIONAA!!*/
+
   
     // Insertar rutas sin protección de autenticación aquí
     Route.delete("eliminarUsuario/:id","UserController.realEliminarUsuarioPorId");
