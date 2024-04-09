@@ -40,10 +40,11 @@ addPrefixToGroup(
     Route.post("opciones_admin123/votar", "OpcionesAdminController.votar");
 
     // Opciones encuesta de comun
-    Route.get("opciones/id/:encuestaId", "OpcionesAdminController.index");
-    Route.get("opciones/idOpcion/:id", "OpcionesAdminController.show");
-    Route.get("opciones/", "OpcionesAdminController.getAllOptions");
-    Route.post("opciones/votar", "OpcionesAdminController.votar");
+    Route.get("opciones-usuario/id/:encuestaId", "OpcionController.index");
+    Route.get("opciones-usuario/idOpcion/:id", "OpcionController.show");
+    Route.get("opciones-usuario/", "OpcionController.getAllOptions");
+    Route.post("opciones-usuario/votar", "OpcionController.votar");
+
 
     // Insertar rutas sin protección de autenticación aquí
     Route.delete(
