@@ -93,9 +93,9 @@ class OpcionController {
         return response.status(404).json({ error: "Usuario no encontrado" });
       }
 
+      // #### HASTA AQUI ESTA BIEN 
       // Agregar el ID del usuario a la lista de usuarios que han votado por esta opción
       let usuariosIds = opcion.getUsuariosIds();
-
       usuariosIds.push(usuarioId); // Agregar el nuevo usuarioId
       opcion.setUsuariosIds(usuariosIds); // Actualizar la lista de IDs de usuarios
       await opcion.save(); // Guardar la opción actualizada

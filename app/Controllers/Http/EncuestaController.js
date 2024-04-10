@@ -1,6 +1,6 @@
 'use strict'
-const Encuesta = use("App/Models/Encuesta")
-const OpcionEncuesta = use("App/Models/OpcionEncuesta")
+const Encuesta = use("App/Models/Encuesta.js")
+const OpcionEncuesta = use("App/Models/OpcionEncuesta.js")
 const User = use("App/Models/User")
 
 class EncuestaController {
@@ -56,7 +56,7 @@ class EncuestaController {
         await opcion.save()
       }
   
-      response.status(201).json({ message: 'Encuesta de administrador creada exitosamente', encuesta })
+      return encuesta
     } catch (error) {
       console.error('Error al crear la encuesta de administrador:', error.message)
       response.status(500).json({ error: 'Internal Server Error' })
