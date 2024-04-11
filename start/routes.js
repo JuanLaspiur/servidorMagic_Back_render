@@ -30,6 +30,13 @@ const addPrefixToGroup = (group) => {
 
 addPrefixToGroup(
   Route.group(() => {
+    // Insignas
+    Route.get("insignas/:id", "InsignaController.show"); // Mostrar una insignia por su ID
+    Route.post("insignas", "InsignaController.store"); // Crear una nueva insignia
+    Route.put("insignas/:id", "InsignaController.update"); // Actualizar una insignia por su ID
+    Route.delete("insignas/:id", "InsignaController.destroy"); // Eliminar una insignia por su ID
+    Route.get("insignas", "InsignaController.index"); // Obtener todas las insignias
+
     // Opciones encuesta de administrador
     Route.get(
       "opciones_admin123/id/:encuestaId",
@@ -44,7 +51,6 @@ addPrefixToGroup(
     Route.get("opciones-usuario/idOpcion/:id", "OpcionController.show");
     Route.get("opciones-usuario/", "OpcionController.getAllOptions");
     Route.post("opciones-usuario/votar", "OpcionController.votar");
-
 
     // Insertar rutas sin protección de autenticación aquí
     Route.delete(
