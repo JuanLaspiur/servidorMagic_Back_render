@@ -1,6 +1,6 @@
 'use strict';
 
-const Insigna = use('App/Models/Insigna')
+const Insigna = use('App/Models/Insignas')
 
 class InsignaController {
   /**
