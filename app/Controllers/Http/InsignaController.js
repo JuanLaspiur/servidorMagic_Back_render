@@ -88,22 +88,24 @@ class InsignaController {
     try {
       const insignaId = params.id
       const insigna = await Insigna.find(insignaId)
-
+  
       if (!insigna) {
         return response.status(404).json({ error: 'Insignia no encontrada' })
       }
-
-      const { name, description, image } = request.only(['name', 'description', 'image'])
-      insigna.merge({ name, description, image })
+  
+      const { name, description, image, usuario_ids } = request.only(['name', 'description', 'image', 'usuario_ids'])
+      
+      // Fusionar los datos de la insignia con los nuevos valores
+      insigna.merge({ name, description, image, usuario_ids })
       await insigna.save()
-
+  
       return response.status(200).json(insigna)
     } catch (error) {
       console.error('Error al actualizar la insignia:', error.message)
       return response.status(500).json({ error: 'Error interno del servidor' })
     }
   }
-
+  
   /**
    * Elimina una insignia por su ID.
    * DELETE /insignas/:id
