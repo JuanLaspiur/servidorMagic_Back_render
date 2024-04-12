@@ -36,6 +36,7 @@ addPrefixToGroup(
     Route.put("insignas/:id", "InsignaController.update"); // Actualizar una insignia por su ID
     Route.delete("insignas/:id", "InsignaController.destroy"); // Eliminar una insignia por su ID
     Route.get("insignas", "InsignaController.index"); // Obtener todas las insignias
+    Route.put("insignas/:insignaId/usuarios/:userId", "InsignaController.agregarUsuarioAInsigna");
 
     // Opciones encuesta de administrador
     Route.get(

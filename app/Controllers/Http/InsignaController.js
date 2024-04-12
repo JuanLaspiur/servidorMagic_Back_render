@@ -16,6 +16,34 @@ class InsignaController {
       return response.status(500).json({ error: 'Error interno del servidor' })
     }
   }
+  async agregarUsuarioAInsigna({ params, response }) {
+    try {
+      const { insignaId, userId } = params;
+  
+      // Encuentra la insignia por su ID
+      const insigna = await Insigna.find(insignaId);
+      if (!insigna) {
+        return response.status(404).json({ error: 'Insignia no encontrada' });
+      }
+  
+      // Obtiene la lista actual de IDs de usuarios y agrega el nuevo ID de usuario
+      let usuariosIds = insigna.getUsuariosIds();
+      usuariosIds.push(userId);
+  
+      // Establece la nueva lista de IDs de usuarios en la insignia y guarda los cambios
+      insigna.setUsuariosIds(usuariosIds);
+      await insigna.save();
+  
+      return response.status(200).json({ message: 'Usuario agregado a la insignia exitosamente' });
+    } catch (error) {
+      console.error('Error al agregar el usuario a la insignia:', error.message);
+      return response.status(500).json({ error: 'Error interno del servidor' });
+    }
+  }
+  
+  
+  
+  
 
   /**
    * Muestra una insignia por su ID.

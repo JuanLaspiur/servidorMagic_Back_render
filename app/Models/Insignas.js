@@ -17,8 +17,12 @@ class Insigna extends Model {
   }
 
   // Relación con la lista de usuarios que poseen esta insignia
-  users() {
-    return this.belongsToMany('App/Models/User').pivotTable('user_insigna')
+  getUsuariosIds() {
+    return this.usuario_ids ? this.usuario_ids.split(',') : [];
+  }
+
+  setUsuariosIds(ids) {
+    this.usuario_ids = ids.join(',');
   }
 }
 
