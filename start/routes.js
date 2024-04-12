@@ -30,6 +30,12 @@ const addPrefixToGroup = (group) => {
 
 addPrefixToGroup(
   Route.group(() => {
+    Route.post("upload", async ({ request }) => {
+      // Usa el middleware de Multer en la ruta
+      const file = await request.file("archivo");
+      // Procesa el archivo como desees
+    });
+
     // Insignas
     Route.get("insignas/:id", "InsignaController.show"); // Mostrar una insignia por su ID
     Route.post("insignas", "InsignaController.store"); // Crear una nueva insignia
