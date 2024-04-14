@@ -2,8 +2,8 @@
 
 const Insigna = use("App/Models/Insignas");
 var randomize = require("randomatic");
-const { upload } = require('../../Middleware/multer');
 const multer = require('multer');
+const  upload = use('App/Middleware/MulterConfig.js');
 class InsignaController {
 
   /**
@@ -143,34 +143,41 @@ class InsignaController {
     }
   }
 
-async addImg({ request, response }) {
-  try {
-    // Llamar al middleware de Multer para manejar la carga de archivos
-    upload.single('file')(request, response, async function (err) {
-      if (err instanceof multer.MulterError) {
-        // Si hay un error de Multer, manejarlo aquí
-        console.log('Error de Multer:', err);
-        response.status(500).send('Error de Multer');
-      } else if (err) {
-        // Si hay otro tipo de error, manejarlo aquí
-        console.log('Otro error:', err);
-        response.status(500).send('Error al procesar la solicitud');
-      } else {
-        // Si la carga de archivos se completó correctamente, obtener el archivo subido
-        let profilePic = request.file;
-        console.log('Imagen de la solicitud:', profilePic);
-        
-        // Aquí puedes realizar cualquier procesamiento adicional con el archivo subido
-        
-        response.status(200).send('Archivo subido correctamente');
-      }
-    });
-  } catch (error) {
-    // Manejar errores generales aquí
-    console.log('Error:', error);
-    response.status(500).send('Error interno del servidor');
+  async addImg({ request, response }) {
+    
+    try {
+      // Utilizar una promesa para manejar el middleware de multer de forma asincrónica
+      await new Promise((resolve, reject) => {
+        upload.single('file')(request, response, function (err) {
+          if (err instanceof multer.MulterError) {
+            console.log(request.file)
+            console.log('Error de Multer:', err);
+            reject(err); // Rechazar la promesa en caso de error de Multer
+          } else if (err) {
+            console.log('Otro error:', err);
+            reject(err); // Rechazar la promesa en caso de otro error
+          } else {
+            resolve(); // Resolver la promesa si no hay errores
+          }
+          console.log('Imagen dentro de la funcion   ' + request.file)
+        });
+      });
+  
+      // Si la carga de archivos se completó correctamente, obtener el archivo subido
+      let profilePic = request.file;
+      console.log('Imagen de la solicitud:', profilePic);
+      
+      // Realizar cualquier procesamiento adicional con el archivo subido aquí
+      
+      // Enviar una respuesta de éxito
+      response.status(200).send('Archivo subido correctamente');
+    } catch (error) {
+      // Capturar cualquier error y manejarlo aquí
+      console.log('Error:', error);
+      response.status(500).send('Error interno del servidor');
+    }
   }
-}
+  
 
   
 }
