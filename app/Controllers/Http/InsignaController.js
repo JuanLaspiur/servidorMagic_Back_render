@@ -143,34 +143,35 @@ class InsignaController {
     }
   }
 
-  async addImg({ request, response }) {
-    try {
-      // Llamar al middleware de Multer para manejar la carga de archivos
-      upload.single('file')(request, response, async function (err) {
-        if (err instanceof multer.MulterError) {
-          // Si hay un error de Multer, manejarlo aquí
-          console.log('Error de Multer:', err);
-          response.status(500).send('Error de Multer');
-        } else if (err) {
-          // Si hay otro tipo de error, manejarlo aquí
-          console.log('Otro error:', err);
-          response.status(500).send('Error al procesar la solicitud');
-        } else {
-          // Si la carga de archivos se completó correctamente, obtener el archivo subido
-          let profilePic = request.file;
-          console.log('Imagen de la solicitud:', profilePic);
-          
-          // Aquí puedes realizar cualquier procesamiento adicional con el archivo subido
-          
-          response.status(200).send('Archivo subido correctamente');
-        }
-      });
-    } catch (error) {
-      // Manejar errores generales aquí
-      console.log('Error:', error);
-      response.status(500).send('Error interno del servidor');
-    }
+async addImg({ request, response }) {
+  try {
+    // Llamar al middleware de Multer para manejar la carga de archivos
+    upload.single('file')(request, response, async function (err) {
+      if (err instanceof multer.MulterError) {
+        // Si hay un error de Multer, manejarlo aquí
+        console.log('Error de Multer:', err);
+        response.status(500).send('Error de Multer');
+      } else if (err) {
+        // Si hay otro tipo de error, manejarlo aquí
+        console.log('Otro error:', err);
+        response.status(500).send('Error al procesar la solicitud');
+      } else {
+        // Si la carga de archivos se completó correctamente, obtener el archivo subido
+        let profilePic = request.file;
+        console.log('Imagen de la solicitud:', profilePic);
+        
+        // Aquí puedes realizar cualquier procesamiento adicional con el archivo subido
+        
+        response.status(200).send('Archivo subido correctamente');
+      }
+    });
+  } catch (error) {
+    // Manejar errores generales aquí
+    console.log('Error:', error);
+    response.status(500).send('Error interno del servidor');
   }
+}
+
   
 }
 
