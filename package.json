@@ -5,6 +5,7 @@
   "description": "The fullstack application boilerplate for Adonisjs",
   "main": "index.js",
   "scripts": {
+    "dev": "nodemon server.js",
     "start": "node server.js",
     "test": "node ace test"
   },
@@ -42,7 +43,9 @@
     "socket.io": "^4.6.1",
     "uuid": "^9.0.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
   "autoload": {
     "App": "./app"
   }

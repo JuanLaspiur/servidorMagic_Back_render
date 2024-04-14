@@ -127,6 +127,29 @@ class InsignaController {
       return response.status(500).json({ error: 'Error interno del servidor' })
     }
   }
+
+  async updateImg ({ request, response, params }) {
+    var profilePic = request.file('files', {
+      types: ['image'],
+      size: '25mb'
+    })
+    if (profilePic) {
+      if (Helpers.appRoot('storage/uploads/quedada')) {
+        await profilePic.move(Helpers.appRoot('storage/uploads/insignas'), {
+          name: params.id.toString(),
+          overwrite: true
+        })
+      } else {
+        mkdirp.sync(`${__dirname}/storage/Excel`)
+      }
+
+      if (!profilePic.moved()) {
+        return profilePic.error()
+      } else {
+        response.send(true)
+      }
+    }
+  }
 }
 
 module.exports = InsignaController

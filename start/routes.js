@@ -15,7 +15,6 @@
 
 /** @type {typeof import('@adonisjs/framework/src/Route/Manager')} */
 const Route = use("Route");
-
 Route.get("/", () => {
   return {
     greeting: "Hello world in JSON",
@@ -30,11 +29,8 @@ const addPrefixToGroup = (group) => {
 
 addPrefixToGroup(
   Route.group(() => {
-    Route.post("upload", async ({ request }) => {
-      // Usa el middleware de Multer en la ruta
-      const file = await request.file("archivo");
-      // Procesa el archivo como desees
-    });
+    //
+    Route.post("uploadInsignaImg", "InsignaController.updateImg");
 
     // Insignas
     Route.get("insignas/:id", "InsignaController.show"); // Mostrar una insignia por su ID
@@ -42,7 +38,10 @@ addPrefixToGroup(
     Route.put("insignas/:id", "InsignaController.update"); // Actualizar una insignia por su ID
     Route.delete("insignas/:id", "InsignaController.destroy"); // Eliminar una insignia por su ID
     Route.get("insignas", "InsignaController.index"); // Obtener todas las insignias
-    Route.put("insignas/:insignaId/usuarios/:userId", "InsignaController.agregarUsuarioAInsigna");
+    Route.put(
+      "insignas/:insignaId/usuarios/:userId",
+      "InsignaController.agregarUsuarioAInsigna"
+    );
 
     // Opciones encuesta de administrador
     Route.get(
