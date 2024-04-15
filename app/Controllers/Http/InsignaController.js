@@ -6,6 +6,7 @@ const multer = require('multer');
 const  upload = use('App/Middleware/MulterConfig.js');
 const Helpers = use('Helpers');
 const mkdirp = use("mkdirp");
+const crypto = require('crypto');
 class InsignaController {
 
   /**
@@ -77,11 +78,8 @@ class InsignaController {
    */
   async store({ request, response }) {
     try {
-      const { name, description, image } = request.only([
-        "name",
-        "description",
-        "image",
-      ]);
+      const image = await this.updatePerfilImg(request);
+      const { name, description } = request.body; // Accede a los datos desde request.body
       const insigna = await Insigna.create({ name, description, image });
       return response.status(201).json(insigna);
     } catch (error) {
@@ -89,7 +87,7 @@ class InsignaController {
       return response.status(500).json({ error: "Error interno del servidor" });
     }
   }
-
+  
   /**
    * Actualiza una insignia existente por su ID.
    * PUT /insignas/:id
@@ -180,39 +178,35 @@ class InsignaController {
     }
   }
 
-  async updatePerfilImg({ request, response }) {
-   
+  async  updatePerfilImg(request) {
     try {
-       var profilePic = request.file("files", {
+      var profilePic = request.file("files", {
         types: ["image"],
         size: "25mb",
       });
   
       if (profilePic) {
-        console.log('Me llamaron 3 ')
-        console.log(profilePic)
-       
         if (Helpers.appRoot("storage/uploads/insignas")) {
+          // Generar un nombre aleatorio único para la imagen
+          const randomName = crypto.randomBytes(20).toString('hex');
+          // Obtener la extensión del archivo
+          const extension = profilePic.extname;
+          // Mover la imagen al directorio de almacenamiento con el nuevo nombre
           await profilePic.move(Helpers.appRoot("storage/uploads/insignas"), {
+            name: `${randomName}.${extension}`,
             overwrite: true,
           });
+          return `${randomName}.${extension}`
         } else {
           mkdirp.sync(`${__dirname}/storage/Excel`);
         }
-  
-        if (!profilePic.moved()) {
-          return profilePic.error();
-        } else {
-          return response.send({ message: "Archivo subido correctamente" });
-        }
-      } else {
-        return response.status(400).send({ error: "No se envió ningún archivo" });
-      }
+
+      } 
     } catch (error) {
       console.error('Error:', error);
-      return response.status(500).send({ error: "Error interno del servidor" });
     }
   }
+  
   
   
 
