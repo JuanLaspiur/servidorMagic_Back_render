@@ -103,6 +103,15 @@ class UploadController {
       response.download(imgDefault)
     }
   }
+  async getFileByDirectoryInsignas ({ params, response }) {
+    const dir = params.file
+    const path = Helpers.appRoot('storage/uploads/insignas') + `/${dir}`
+    if(fs.existsSync(path)){
+      response.download(path)
+    } else {
+      response.download(imgDefault)
+    }
+  }
 
   async getFileByDirectoryMediacion ({ params, response }) {
     const dir = params.file

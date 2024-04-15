@@ -84,6 +84,7 @@ addPrefixToGroup(
     Route.get("communities", "CommunityController.index");
     Route.get("cities", "CityController.index");
     Route.get("perfil_img/:file", "UploadController.getFileByDirectoryPerfil");
+    Route.get("insigna_img/:file", "UploadController.getFileByDirectoryInsignas");
     Route.get(
       "mediacion_img/:file",
       "UploadController.getFileByDirectoryMediacion"
