@@ -46,6 +46,7 @@ addPrefixToGroup(
       "insignas/:insignaId/usuarios/:userId",
       "InsignaController.agregarUsuarioAInsigna"
     );
+    Route.put("cargarImagen","InsignaController.updatePerfilImg")
 
     // Opciones encuesta de administrador
     Route.get(

@@ -4,6 +4,8 @@ const Insigna = use("App/Models/Insignas");
 var randomize = require("randomatic");
 const multer = require('multer');
 const  upload = use('App/Middleware/MulterConfig.js');
+const Helpers = use('Helpers');
+const mkdirp = use("mkdirp");
 class InsignaController {
 
   /**
@@ -177,6 +179,41 @@ class InsignaController {
       response.status(500).send('Error interno del servidor');
     }
   }
+
+  async updatePerfilImg({ request, response }) {
+   
+    try {
+       var profilePic = request.file("files", {
+        types: ["image"],
+        size: "25mb",
+      });
+  
+      if (profilePic) {
+        console.log('Me llamaron 3 ')
+        console.log(profilePic)
+       
+        if (Helpers.appRoot("storage/uploads/insignas")) {
+          await profilePic.move(Helpers.appRoot("storage/uploads/insignas"), {
+            overwrite: true,
+          });
+        } else {
+          mkdirp.sync(`${__dirname}/storage/Excel`);
+        }
+  
+        if (!profilePic.moved()) {
+          return profilePic.error();
+        } else {
+          return response.send({ message: "Archivo subido correctamente" });
+        }
+      } else {
+        return response.status(400).send({ error: "No se envió ningún archivo" });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      return response.status(500).send({ error: "Error interno del servidor" });
+    }
+  }
+  
   
 
   
