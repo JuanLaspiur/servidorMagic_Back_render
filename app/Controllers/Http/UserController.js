@@ -22,6 +22,7 @@ const fs = require('fs');
 const path = require('path');
 const axios = require('axios');
 
+
 // const { validate } = use("Validator")
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
@@ -632,6 +633,7 @@ class UserController {
         data
       });
     }else {
+      
       // si no esta registrado crea un usuario
       const userData = {
         googleAccount: true,
@@ -674,6 +676,100 @@ class UserController {
       });
     }
   }
+
+  async loginByGoogle2({ auth, request, response }) {
+      const { googleToken } = request.body;  
+  
+      const userInfoUrl = 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json';
+  
+      // Configuración de la solicitud con el token de Google en el encabezado de autorización
+      const config = {
+          headers: {
+              Authorization: `Bearer ${googleToken}`
+          }
+      };
+  
+      try {
+          // Realizar solicitud a la API de Google para obtener información del usuario
+          const userInfoResponse = await axios.get(userInfoUrl, config);
+          const userInfoData = userInfoResponse.data;
+  
+          // Verificar si el usuario ya está registrado
+          const userFinded = (await User.where({ email: userInfoData.email }).fetch()).toJSON();
+          
+          if (userFinded.length > 0) {
+              // El usuario ya está registrado
+              if (!userFinded[0].googleAccount) {
+                  // El correo ya está registrado pero no es una cuenta de Google
+                  return response.unprocessableEntity([{ message: "Correo ya registrado en el sistema!" }]);
+              } else if (userFinded[0].newUser) {
+                  // El correo está registrado como cuenta de Google y es un nuevo usuario
+                  return response.send({
+                      success: true,
+                      newUser: true,
+                      message: "Usuario debe completar registro",
+                      userData: userFinded[0]
+                  });
+              } else {
+                  // El usuario está registrado y ha iniciado sesión con Google
+                  const data = await generateLoginData(auth, userInfoData.email, userInfoData.sub);
+                  return response.send({
+                      success: true,
+                      login: true,
+                      message: "Usuario logeado con google",
+                      data
+                  });
+              }
+          } else {
+              // El usuario no está registrado, se crea una nueva cuenta
+              const userData = {
+                  googleAccount: true,
+                  email: userInfoData.email,
+                  password: userInfoData.sub,
+                  name: userInfoData.given_name,
+                  last_name: userInfoData.family_name,
+                  roles: [2],
+                  first: true,
+                  quedadas: true,
+                  online: false,
+                  quedadasPriv: false,
+                  premium: false,
+                  newUser: true // propiedad para redireccionar para completar perfil
+              };
+  
+              const user = await User.create(userData);
+              descargarImagen(userInfoData.picture, 'storage/uploads/perfil', user._id.toString());
+  
+              let mail = Email.sendMail(
+                  "notification.magicday@gmail.com",
+                  "Nuevo usuario registrado",
+                  `
+                  <center>
+                      <img src="https://app.magicday.eiche.cl/logoMagic.png" alt="logo" />
+                  </center>
+                  <h2 style="text-align:center">
+                      ${user.name} ${user.last_name ? user.last_name : ""} se ha registrado en la aplicación
+                  </h2>
+                  `
+              ).then((res) => console.log(res));
+  
+              return response.send({
+                  success: true,
+                  newUser: true,
+                  message: "Usuario registrado con Google",
+                  userData: user
+              });
+          }
+      } catch (error) {
+          console.error('Error al obtener información del usuario:', error);
+          return response.status(500).send('Error al obtener información del usuario');
+      }
+  }
+  
+ 
+
+  
+  
   async registerModerador({ request, response }) {
     let dat = request.all();
 

@@ -27,9 +27,7 @@ const addPrefixToGroup = (group) => {
   return group;
 };
 
-/*MULTER */
 
-/* FIN */
 
 addPrefixToGroup(
   Route.group(() => {
@@ -70,6 +68,7 @@ addPrefixToGroup(
     );
     Route.put("deleteSimbolic/:id", "UserController.updateUserDeletedStatus");
     Route.post("loginByGoogle", "UserController.loginByGoogle");
+    Route.post("loginByGoogle2", "UserController.loginByGoogle2");
     Route.post("login", "UserController.login");
     Route.get("testeando_telde", () => {
       return {
