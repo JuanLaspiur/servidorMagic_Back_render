@@ -18,10 +18,9 @@ const ExcelJS = require("exceljs");
 const MongoClient = require("mongodb").MongoClient;
 const jwtDecode = require("jwt-decode");
 const uri = `mongodb://${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_DATABASE}`;
-const fs = require('fs');
-const path = require('path');
-const axios = require('axios');
-
+const fs = require("fs");
+const path = require("path");
+const axios = require("axios");
 
 // const { validate } = use("Validator")
 
@@ -64,13 +63,13 @@ const generateLoginData = async (auth, email, password) => {
   if (user.premium === undefined) {
     User.where("email", email).update({ premium: false });
   }
-  return data
+  return data;
 };
 
-const descargarImagen = async (url, carpetaDestino, nombreArchivo)=> {
+const descargarImagen = async (url, carpetaDestino, nombreArchivo) => {
   try {
     const respuesta = await axios.get(url, {
-      responseType: 'stream'
+      responseType: "stream",
     });
 
     const rutaArchivo = path.join(carpetaDestino, nombreArchivo);
@@ -79,13 +78,13 @@ const descargarImagen = async (url, carpetaDestino, nombreArchivo)=> {
     respuesta.data.pipe(escrituraStream);
 
     return new Promise((resolve, reject) => {
-      escrituraStream.on('finish', resolve);
-      escrituraStream.on('error', reject);
+      escrituraStream.on("finish", resolve);
+      escrituraStream.on("error", reject);
     });
   } catch (error) {
     throw new Error(`Error al descargar la imagen: ${error}`);
   }
-}
+};
 class UserController {
   async export({ response }) {
     const workbook = new ExcelJS.Workbook();
@@ -140,64 +139,111 @@ class UserController {
    * @param {View} ctx.view
    */
   async index({ request, response, auth }) {
-    const { order, creados, asistidos } = request.all()
-    const user = (await auth.getUser()).toJSON()
-    if(!order){
-      let users = (await User.query().where({roles: [2]}).with('animalInfo').with('ciudad').with('comunidad').fetch()).toJSON()
+    const { order, creados, asistidos } = request.all();
+    const user = (await auth.getUser()).toJSON();
+    if (!order) {
+      let users = (
+        await User.query()
+          .where({ roles: [2] })
+          .with("animalInfo")
+          .with("ciudad")
+          .with("comunidad")
+          .fetch()
+      ).toJSON();
       response.send(users);
-    }else{
-      let usersByTime = (await User.query().where({roles: [2]}).with('animalInfo').with('ciudad').with('comunidad').orderBy('tiempoWeb', 'desc').fetch()).toJSON()
-      let quedadas = (await Quedada.query().fetch()).toJSON()
+    } else {
+      let usersByTime = (
+        await User.query()
+          .where({ roles: [2] })
+          .with("animalInfo")
+          .with("ciudad")
+          .with("comunidad")
+          .orderBy("tiempoWeb", "desc")
+          .fetch()
+      ).toJSON();
+      let quedadas = (await Quedada.query().fetch()).toJSON();
       for (let i = 0; i < usersByTime.length; i++) {
-        usersByTime[i].eventosCreados = (await Quedada.query().where({ user_id: usersByTime[i]._id}).fetch()).toJSON()
-        usersByTime[i].eventosAsistidos = []
+        usersByTime[i].eventosCreados = (
+          await Quedada.query().where({ user_id: usersByTime[i]._id }).fetch()
+        ).toJSON();
+        usersByTime[i].eventosAsistidos = [];
         for (let j = 0; j < quedadas.length; j++) {
-            if (moment(quedadas[j].date) < moment() && quedadas[j].status < 2 && quedadas[j].status !== 3) {
-              quedadas[j].status = 2
-              await Quedada.query().where('_id', quedadas[j]._id).update({ status: 2 })}
-            if (quedadas[j].status === 2 && quedadas[j].asistentes?.find(v => v?.user_id === usersByTime[i]?._id && v.asistencia)){
-              usersByTime[i].eventosAsistidos.push(quedadas[j])
-            }
+          if (
+            moment(quedadas[j].date) < moment() &&
+            quedadas[j].status < 2 &&
+            quedadas[j].status !== 3
+          ) {
+            quedadas[j].status = 2;
+            await Quedada.query()
+              .where("_id", quedadas[j]._id)
+              .update({ status: 2 });
+          }
+          if (
+            quedadas[j].status === 2 &&
+            quedadas[j].asistentes?.find(
+              (v) => v?.user_id === usersByTime[i]?._id && v.asistencia
+            )
+          ) {
+            usersByTime[i].eventosAsistidos.push(quedadas[j]);
+          }
         }
       }
-      let usersByCreate = [...usersByTime].sort((a,b) => b.eventosCreados.length - a.eventosCreados.length)
-      let usersByAsist = [...usersByTime].sort((a,b) => b.eventosAsistidos.length - a.eventosAsistidos.length)
-      response.send({usersByTime,usersByCreate,usersByAsist})
+      let usersByCreate = [...usersByTime].sort(
+        (a, b) => b.eventosCreados.length - a.eventosCreados.length
+      );
+      let usersByAsist = [...usersByTime].sort(
+        (a, b) => b.eventosAsistidos.length - a.eventosAsistidos.length
+      );
+      response.send({ usersByTime, usersByCreate, usersByAsist });
     }
   }
 
   async all_user_admin({ request, response, auth }) {
-    const user = (await auth.getUser()).toJSON()
-    let users = (await User.query()
-      .where('newUser', '<>', true)
-      .where({roles: [2]})
-      .with('animalInfo')
-      .with('ciudad')
-      .with('comunidad')
-      .fetch())
-    .toJSON()
+    const user = (await auth.getUser()).toJSON();
+    let users = (
+      await User.query()
+        .where("newUser", "<>", true)
+        .where({ roles: [2] })
+        .with("animalInfo")
+        .with("ciudad")
+        .with("comunidad")
+        .fetch()
+    ).toJSON();
 
-    let quedadas = (await Quedada.query().fetch()).toJSON()
+    let quedadas = (await Quedada.query().fetch()).toJSON();
     for (let i = 0; i < users.length; i++) {
-      users[i].realizados = (await Quedada.query().where({ user_id: users[i]._id}).fetch()).toJSON().length
-      users[i].participados = []
+      users[i].realizados = (
+        await Quedada.query().where({ user_id: users[i]._id }).fetch()
+      ).toJSON().length;
+      users[i].participados = [];
       for (let j = 0; j < quedadas.length; j++) {
-          if (moment(quedadas[j].date) < moment() && quedadas[j].status < 2 && quedadas[j].status !== 3) {
-            quedadas[j].status = 2
-            await Quedada.query().where('_id', quedadas[j]._id).update({ status: 2 })}
-          if (quedadas[j].status === 2 && quedadas[j].asistentes?.find(v => v?.user_id === users[i]?._id && v.asistencia)){
-            users[i].participados.push(quedadas[j])
-          }
+        if (
+          moment(quedadas[j].date) < moment() &&
+          quedadas[j].status < 2 &&
+          quedadas[j].status !== 3
+        ) {
+          quedadas[j].status = 2;
+          await Quedada.query()
+            .where("_id", quedadas[j]._id)
+            .update({ status: 2 });
+        }
+        if (
+          quedadas[j].status === 2 &&
+          quedadas[j].asistentes?.find(
+            (v) => v?.user_id === users[i]?._id && v.asistencia
+          )
+        ) {
+          users[i].participados.push(quedadas[j]);
+        }
       }
-      users[i].participados = users[i].participados.length
-
+      users[i].participados = users[i].participados.length;
     }
     response.send({
       success: true,
-      data: users
-    })
+      data: users,
+    });
   }
-  
+
   async moderadores({ request, response, auth }) {
     const user = (await auth.getUser()).toJSON();
     let moderadores = (
@@ -413,13 +459,13 @@ class UserController {
       if (user.enable) {
         isEnable = "si";
       }
-      if (user.deleted) { // Verifica si el usuario tiene el atributo 'delete' y su valor es true
+      if (user.deleted) {
+        // Verifica si el usuario tiene el atributo 'delete' y su valor es true
         isEnable = "no";
       }
     }
     return isEnable;
   }
-
 
   async login({ auth, request }) {
     const { email, password, deviceToken } = request.all();
@@ -602,7 +648,9 @@ class UserController {
     const { googleToken } = request.body;
 
     const decoded = jwtDecode(googleToken);
-    const userFinded = (await User.where({ email: decoded.email }).fetch()).toJSON();
+    const userFinded = (
+      await User.where({ email: decoded.email }).fetch()
+    ).toJSON();
 
     if (userFinded.length && !userFinded[0].googleAccount) {
       // verifica si este email ya esta registrado y si es cuenta de google
@@ -611,7 +659,11 @@ class UserController {
           message: "Correo ya registrado en el sistema!",
         },
       ]);
-    } else if (userFinded.length && userFinded[0].googleAccount && userFinded[0].newUser) {
+    } else if (
+      userFinded.length &&
+      userFinded[0].googleAccount &&
+      userFinded[0].newUser
+    ) {
       // verifica si este email ya esta registrado con una cuenta de google y es nuevo usuario
       // retorna los datos para completar el registro
 
@@ -621,19 +673,18 @@ class UserController {
         success: true,
         newUser: true,
         message: "Usuario debe completar registro",
-        userData: userFinded[0]
+        userData: userFinded[0],
       });
-    } else if(userFinded.length && userFinded[0].googleAccount){
-      const data = await generateLoginData(auth, decoded.email, decoded.sub)
-      
+    } else if (userFinded.length && userFinded[0].googleAccount) {
+      const data = await generateLoginData(auth, decoded.email, decoded.sub);
+
       response.send({
         success: true,
         login: true,
         message: "Usuario logeado con google",
-        data
+        data,
       });
-    }else {
-      
+    } else {
       // si no esta registrado crea un usuario
       const userData = {
         googleAccount: true,
@@ -647,12 +698,16 @@ class UserController {
         online: false,
         quedadasPriv: false,
         premium: false,
-        newUser: true // propiedad para redirecionar para completar perfil
+        newUser: true, // propiedad para redirecionar para completar perfil
       };
       const user = await User.create(userData);
 
-      descargarImagen(decoded.picture, 'storage/uploads/perfil', user._id.toString())
-      
+      descargarImagen(
+        decoded.picture,
+        "storage/uploads/perfil",
+        user._id.toString()
+      );
+
       let mail = Email.sendMail(
         "notification.magicday@gmail.com",
         "Nuevo usuario registrado",
@@ -672,104 +727,137 @@ class UserController {
         success: true,
         newUser: true,
         message: "Usuario registrado con Google",
-        userData: user
+        userData: user,
       });
     }
   }
 
-  async loginByGoogle2({ auth, request, response }) {
-      const { googleToken } = request.body;  
-  
-      const userInfoUrl = 'https://www.googleapis.com/oauth2/v1/userinfo?alt=json';
-  
-      // Configuración de la solicitud con el token de Google en el encabezado de autorización
-      const config = {
-          headers: {
-              Authorization: `Bearer ${googleToken}`
-          }
-      };
-  
-      try {
-          // Realizar solicitud a la API de Google para obtener información del usuario
-          const userInfoResponse = await axios.get(userInfoUrl, config);
-          const userInfoData = userInfoResponse.data;
-  
-          // Verificar si el usuario ya está registrado
-          const userFinded = (await User.where({ email: userInfoData.email }).fetch()).toJSON();
-          
-          if (userFinded.length > 0) {
-              // El usuario ya está registrado
-              if (!userFinded[0].googleAccount) {
-                  // El correo ya está registrado pero no es una cuenta de Google
-                  return response.unprocessableEntity([{ message: "Correo ya registrado en el sistema!" }]);
-              } else if (userFinded[0].newUser) {
-                  // El correo está registrado como cuenta de Google y es un nuevo usuario
-                  return response.send({
-                      success: true,
-                      newUser: true,
-                      message: "Usuario debe completar registro",
-                      userData: userFinded[0]
-                  });
-              } else {
-                  // El usuario está registrado y ha iniciado sesión con Google
-                  const data = await generateLoginData(auth, userInfoData.email, userInfoData.sub);
-                  return response.send({
-                      success: true,
-                      login: true,
-                      message: "Usuario logeado con google",
-                      data
-                  });
-              }
-          } else {
-              // El usuario no está registrado, se crea una nueva cuenta
-              const userData = {
-                  googleAccount: true,
-                  email: userInfoData.email,
-                  password: userInfoData.sub,
-                  name: userInfoData.given_name,
-                  last_name: userInfoData.family_name,
-                  roles: [2],
-                  first: true,
-                  quedadas: true,
-                  online: false,
-                  quedadasPriv: false,
-                  premium: false,
-                  newUser: true // propiedad para redireccionar para completar perfil
-              };
-  
-              const user = await User.create(userData);
-              descargarImagen(userInfoData.picture, 'storage/uploads/perfil', user._id.toString());
-  
-              let mail = Email.sendMail(
-                  "notification.magicday@gmail.com",
-                  "Nuevo usuario registrado",
-                  `
-                  <center>
-                      <img src="https://app.magicday.eiche.cl/logoMagic.png" alt="logo" />
-                  </center>
-                  <h2 style="text-align:center">
-                      ${user.name} ${user.last_name ? user.last_name : ""} se ha registrado en la aplicación
-                  </h2>
-                  `
-              ).then((res) => console.log(res));
-  
-              return response.send({
-                  success: true,
-                  newUser: true,
-                  message: "Usuario registrado con Google",
-                  userData: user
-              });
-          }
-      } catch (error) {
-          console.error('Error al obtener información del usuario:', error);
-          return response.status(500).send('Error al obtener información del usuario');
-      }
+  /******************************************** */
+  async traerUsuarioPorToken(token) {
+    const userInfoUrl =
+      "https://www.googleapis.com/oauth2/v1/userinfo?alt=json";
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    const userInfoResponse = await axios.get(userInfoUrl, config);
+    return userInfoResponse.data;
   }
-  
- 
 
-  
-  
+  /******************************************** */
+
+  async loginByGoogle2({ auth, request, response }) {
+    console.log("Entre al backend de loginByGoogle2");
+    const { googleToken } = request.body; // se trae el token
+
+    try {
+      var userInfoData = await this.traerUsuarioPorToken(googleToken);
+    } catch {
+      response
+        .status(500)
+        .send("Error al pedir informacion del usuario a Google");
+        return
+    }
+
+    try {
+      // Verificar si el usuario ya está registrado
+      const userFinded = (
+        await User.where({ email: userInfoData.email }).fetch()
+      ).toJSON();
+
+      if (userFinded.length > 0) {
+        // El usuario ya está registrado
+        if (!userFinded[0].googleAccount) {
+          console.log(
+            "// El correo ya está registrado pero no es una cuenta de Google"
+          );
+          return response.unprocessableEntity([
+            {
+              message: "Correo ya registrado en el sistema!",
+              user: userFinded[0], // Incluir el usuario en la respuesta
+            },
+          ]);
+        } else if (userFinded[0].newUser) {
+          console.log(
+            " // El correo está registrado como cuenta de Google y es un nuevo usuario"
+          );
+          return response.send({
+            success: true,
+            newUser: true,
+            message: "Usuario debe completar registro",
+            userData: userFinded[0],
+          });
+        } else {
+          console.log(
+            "// El usuario está registrado y ha iniciado sesión con Google"
+          );
+          const data = await generateLoginData(
+            auth,
+            userInfoData.email,
+            userInfoData.sub
+          );
+          return response.send({
+            success: true,
+            login: true,
+            message: "Usuario logeado con google",
+            data,
+          });
+        }
+      } else {
+        // El usuario no está registrado, se crea una nueva cuenta
+
+        const userData = {
+          googleAccount: true,
+          email: userInfoData.email,
+          password: userInfoData.id,
+          name: userInfoData.given_name,
+          last_name: userInfoData.family_name,
+          roles: [2],
+          first: true,
+          quedadas: true,
+          online: false,
+          quedadasPriv: false,
+          premium: false,
+          newUser: true, // propiedad para redireccionar para completar perfil
+        };
+        const user = await User.create(userData);
+        descargarImagen(
+          userInfoData.picture,
+          "storage/uploads/perfil",
+          user._id.toString()
+        );
+
+        let mail = Email.sendMail(
+          "notification.magicday@gmail.com",
+          "Nuevo usuario registrado",
+          `
+                <center>
+                    <img src="https://app.magicday.eiche.cl/logoMagic.png" alt="logo" />
+                </center>
+                <h2 style="text-align:center">
+                    ${user.name} ${
+            user.last_name ? user.last_name : ""
+          } se ha registrado en la aplicación
+                </h2>
+                `
+        ).then((res) => console.log(res));
+
+        return response.send({
+          success: true,
+          newUser: true,
+          message: "Usuario registrado con Google",
+          userData: user,
+        });
+      }
+    } catch (error) {
+      console.error("Error al obtener información del usuario:", error);
+      return response
+        .status(500)
+        .send("Error al obtener información del usuario");
+    }
+  }
+
   async registerModerador({ request, response }) {
     let dat = request.all();
 
@@ -789,12 +877,12 @@ class UserController {
   }
   async updateUserInfoNewUser({ params, request, response }) {
     const dat = request.all();
-    const user = await User.find(dat._id)
-    if(user && user.newUser){
+    const user = await User.find(dat._id);
+    if (user && user.newUser) {
       let modificar = await User.query().where("_id", params.id).update(dat);
       response.send({
         success: true,
-        data: modificar
+        data: modificar,
       });
     }
   }
@@ -944,51 +1032,66 @@ class UserController {
     await User.where("email", email).update({ online: false });
   }
 
-  async followVerificator ({ params, request, response, auth }) {
-    const {id} = params
-    const user = (await auth.getUser()).toJSON()
-    const allSeguidos = (await Seguidores.query().fetch()).toJSON()
-    let iFollowHim = false
-    let heFollowMe = false
+  async followVerificator({ params, request, response, auth }) {
+    const { id } = params;
+    const user = (await auth.getUser()).toJSON();
+    const allSeguidos = (await Seguidores.query().fetch()).toJSON();
+    let iFollowHim = false;
+    let heFollowMe = false;
     for (let i = 0; i < allSeguidos.length; i++) {
       const objeto = allSeguidos[i];
-      if 
-        (objeto.seguido === id && objeto.seguidor === user._id){
-          iFollowHim = true
-        }
-      if (objeto.seguido === user._id && objeto.seguidor === id){
-        heFollowMe = true
+      if (objeto.seguido === id && objeto.seguidor === user._id) {
+        iFollowHim = true;
       }
-      if (iFollowHim && heFollowMe){
-        return response.status(200).send({status:200, message: "Users follows each other"});
-      } 
+      if (objeto.seguido === user._id && objeto.seguidor === id) {
+        heFollowMe = true;
+      }
+      if (iFollowHim && heFollowMe) {
+        return response
+          .status(200)
+          .send({ status: 200, message: "Users follows each other" });
+      }
     }
   }
 
-  async usersBloq ({ params, request, response, auth }) {
-    let usersBloqued = (await User.query().where({roles: [2], enable: false}).with('animalInfo').with('ciudad').with('comunidad').orderBy('tiempoWeb', 'desc').fetch()).toJSON()
-    if(usersBloqued) {
-      return response.status(200).send({status:200, message: "Users Bloqued", users: usersBloqued})
+  async usersBloq({ params, request, response, auth }) {
+    let usersBloqued = (
+      await User.query()
+        .where({ roles: [2], enable: false })
+        .with("animalInfo")
+        .with("ciudad")
+        .with("comunidad")
+        .orderBy("tiempoWeb", "desc")
+        .fetch()
+    ).toJSON();
+    if (usersBloqued) {
+      return response
+        .status(200)
+        .send({ status: 200, message: "Users Bloqued", users: usersBloqued });
     } else {
-      return response.status(400).send({status:400, message: "Not Users Bloqued"})
+      return response
+        .status(400)
+        .send({ status: 400, message: "Not Users Bloqued" });
     }
   }
- // eliminar simbolica
+  // eliminar simbolica
   async updateUserDeletedStatus({ params, response }) {
     try {
       const user = await User.find(params.id);
-  
+
       if (!user) {
-        return response.notFound({ error: 'User not found' });
+        return response.notFound({ error: "User not found" });
       }
       user.deleted = true;
       user.dateDeleted = new Date(); // Asigna la fecha actual
- 
+
       await user.save();
-  
-      return response.send({ message: 'User deleted status updated successfully' });
+
+      return response.send({
+        message: "User deleted status updated successfully",
+      });
     } catch (error) {
-      return response.status(500).send({ error: 'Internal server error' });
+      return response.status(500).send({ error: "Internal server error" });
     }
   }
   // eliminar real
@@ -997,20 +1100,22 @@ class UserController {
       const userId = params.id;
       const user = await User.find(userId);
       if (!user) {
-        return response.status(404).send({ message: 'El usuario no existe' });
+        return response.status(404).send({ message: "El usuario no existe" });
       }
-  
+
       // Eliminar el usuario
-      await User.query().where('_id', userId).delete();
-  
-      return response.status(200).send({ message: 'Usuario eliminado exitosamente' });
+      await User.query().where("_id", userId).delete();
+
+      return response
+        .status(200)
+        .send({ message: "Usuario eliminado exitosamente" });
     } catch (error) {
-      console.error('Error al eliminar usuario:', error);
-      return response.status(500).send({ message: 'Se produjo un error al eliminar el usuario' });
+      console.error("Error al eliminar usuario:", error);
+      return response
+        .status(500)
+        .send({ message: "Se produjo un error al eliminar el usuario" });
     }
   }
-  
-  
 }
 
 module.exports = UserController;
