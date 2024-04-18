@@ -757,7 +757,7 @@ class UserController {
       response
         .status(500)
         .send("Error al pedir informacion del usuario a Google");
-        return
+      return;
     }
 
     try {
@@ -768,14 +768,12 @@ class UserController {
 
       if (userFinded.length > 0) {
         // El usuario ya está registrado
+
         if (!userFinded[0].googleAccount) {
-          console.log(
-            "// El correo ya está registrado pero no es una cuenta de Google"
-          );
-          return response.unprocessableEntity([
+          // verifica si este email ya esta registrado y si es cuenta de google
+          response.unprocessableEntity([
             {
               message: "Correo ya registrado en el sistema!",
-              user: userFinded[0], // Incluir el usuario en la respuesta
             },
           ]);
         } else if (userFinded[0].newUser) {
@@ -795,7 +793,7 @@ class UserController {
           const data = await generateLoginData(
             auth,
             userInfoData.email,
-            userInfoData.sub
+            userInfoData.id
           );
           return response.send({
             success: true,
