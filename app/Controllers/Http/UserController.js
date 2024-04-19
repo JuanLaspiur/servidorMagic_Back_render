@@ -644,6 +644,7 @@ class UserController {
       response.send(user);
     }
   }
+  /*
   async loginByGoogle({ auth, request, response }) {
     const { googleToken } = request.body;
 
@@ -730,7 +731,7 @@ class UserController {
         userData: user,
       });
     }
-  }
+  } */
 
   /******************************************** */
   async traerUsuarioPorToken(token) {
@@ -1114,6 +1115,37 @@ class UserController {
         .send({ message: "Se produjo un error al eliminar el usuario" });
     }
   }
+  async modificarTutorial({ request, response, auth }) {
+    const user = (await auth.getUser()).toJSON();
+    const { tutorialState } = request.only(["tutorialState"]); 
+  
+    try {
+      // Verificar si el usuario tiene permiso para realizar esta acción
+      if (user.roles.includes(3)) { // Por ejemplo, solo los moderadores pueden realizar esta acción
+        // Obtener el ID del usuario de los parámetros de la ruta
+        const userId = request.params.userId;
+  
+        // Buscar al usuario por su ID
+        const usuario = await User.find(userId);
+  
+        if (!usuario) {
+          return response.status(404).send({ error: "Usuario no encontrado" });
+        }
+  
+        // Actualizar el estado del tutorial
+        usuario.tutorial = tutorialState;
+        await usuario.save();
+  
+        return response.send({ success: true, message: "Estado del tutorial actualizado exitosamente" });
+      } else {
+        return response.status(403).send({ error: "No tienes permiso para realizar esta acción" });
+      }
+    } catch (error) {
+      return response.status(500).send({ error: "Error al modificar el estado del tutorial" });
+    }
+  }
+  
+  
 }
 
 module.exports = UserController;
