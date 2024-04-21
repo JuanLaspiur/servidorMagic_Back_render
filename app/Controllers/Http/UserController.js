@@ -749,7 +749,7 @@ class UserController {
   /******************************************** */
 
   async loginByGoogle2({ auth, request, response }) {
-    console.log("Entre al backend de loginByGoogle2");
+   // console.log("Entre al backend de loginByGoogle2");
     const { googleToken } = request.body; // se trae el token
 
     try {
@@ -778,9 +778,9 @@ class UserController {
             },
           ]);
         } else if (userFinded[0].newUser) {
-          console.log(
+  /*        console.log(
             " // El correo está registrado como cuenta de Google y es un nuevo usuario"
-          );
+          ); */
           return response.send({
             success: true,
             newUser: true,
@@ -788,9 +788,9 @@ class UserController {
             userData: userFinded[0],
           });
         } else {
-          console.log(
+  /*        console.log(
             "// El usuario está registrado y ha iniciado sesión con Google"
-          );
+          ); */
           const data = await generateLoginData(
             auth,
             userInfoData.email,
@@ -1115,35 +1115,29 @@ class UserController {
         .send({ message: "Se produjo un error al eliminar el usuario" });
     }
   }
-  async modificarTutorial({ request, response, auth }) {
-    const user = (await auth.getUser()).toJSON();
-    const { tutorialState } = request.only(["tutorialState"]); 
-  
+  async modificarTutorial({ request, response }) {
     try {
-      // Verificar si el usuario tiene permiso para realizar esta acción
-      if (user.roles.includes(3)) { // Por ejemplo, solo los moderadores pueden realizar esta acción
-        // Obtener el ID del usuario de los parámetros de la ruta
-        const userId = request.params.userId;
+      const userId = request.params.userId;   
   
-        // Buscar al usuario por su ID
-        const usuario = await User.find(userId);
-  
-        if (!usuario) {
-          return response.status(404).send({ error: "Usuario no encontrado" });
-        }
-  
-        // Actualizar el estado del tutorial
-        usuario.tutorial = tutorialState;
-        await usuario.save();
-  
-        return response.send({ success: true, message: "Estado del tutorial actualizado exitosamente" });
-      } else {
-        return response.status(403).send({ error: "No tienes permiso para realizar esta acción" });
+      const usuario = await User.find(userId);
+      
+      if (!usuario) {
+        return response.status(404).send({ error: "Usuario no encontrado" });
       }
+  
+      const { tutorialState } = request.only(["tutorialState"]);
+  
+      // Actualizar el estado del tutorial
+      usuario.tutorial = tutorialState;
+      await usuario.save();
+  
+      return response.status(200).send({ success: true, message: "Estado del tutorial actualizado exitosamente" });
     } catch (error) {
       return response.status(500).send({ error: "Error al modificar el estado del tutorial" });
     }
   }
+  
+  
   
   
 }
