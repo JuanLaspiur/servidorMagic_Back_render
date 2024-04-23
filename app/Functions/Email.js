@@ -1,8 +1,12 @@
 const Mail = use('Mail')
+const Config = use('Config')
 
 exports.sendMail = async (to, subject, message, attach, cc, bcc) => {
   try {
-    await Mail.raw(message, (msg) => {
+    // Obtén la configuración de correo electrónico específica
+    const emailConfig = Config.get('mail.smtp') // O la conexión que deseas utilizar
+
+    await Mail.connection(emailConfig).raw(message, (msg) => {
       msg.from('info@magicday.app', 'MagicDay')
       msg.to(to)
       msg.subject(subject)

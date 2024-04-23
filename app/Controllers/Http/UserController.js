@@ -639,7 +639,7 @@ class UserController {
         } se ha registrado en la aplicación
           </h2>
           `
-      );
+      ); 
 
       response.send(user);
     }
