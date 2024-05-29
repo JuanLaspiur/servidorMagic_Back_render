@@ -178,7 +178,13 @@ addPrefixToGroup(
     Route.put("edit_quedada/:id", "QuedadaController.edit");
     Route.get("all_quedadas", "QuedadaController.allQuedadas");
     Route.get("all_quedadas_premium", "QuedadaController.allQuedadasPremium");
+    
+
     Route.post("solicitarPremium/:id","QuedadaController.solicitarPremium")
+    Route.get('getSolicitudesParticipacion/:id','QuedadaController.getSolicitudesParticipacion')
+    Route.put('gestionarSolicitudParticipacion/:id','QuedadaController.gestionarSolicitudParticipacion')
+
+
     Route.get("all_quedadas_admin", "QuedadaController.allQuedadasAdmin"); //all quedadas admin
     Route.get("quedada_by_id/:id", "QuedadaController.quedadaById");
     Route.get("quedada_info/:id", "QuedadaController.quedadaInfo");
