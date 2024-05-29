@@ -224,6 +224,42 @@ async allQuedadasPremium({ auth, request, response, view }) {
       response.status(500).send({ error: 'Ha ocurrido un error al obtener las quedadas.' });
   }
 }
+async solicitarPremium({ auth, params, response }) {
+  try {
+    const user = await auth.getUser();
+    const quedada = await Quedada.find(params.id);
+
+    if (!quedada) {
+      return response.status(404).send({ message: 'Quedada not found' });
+    }
+
+    if (!quedada.solicitudesDeParticipacion) {
+      quedada.solicitudesDeParticipacion = [];
+    }
+
+    const userIdString = user._id.toString();
+
+    // Verificar si el usuario ya ha enviado una solicitud
+    for (let i = 0; i < quedada.solicitudesDeParticipacion.length; i++) {
+      const solicitud = quedada.solicitudesDeParticipacion[i];
+      if (solicitud === userIdString) {
+        return response.status(400).send({ message: 'Ya has solicitado participar en esta quedada.' });
+      }
+    }
+
+    quedada.solicitudesDeParticipacion.push(userIdString);
+    await quedada.save();
+
+    response.send({ message: 'Solicitud de participación enviada', quedada });
+  } catch (error) {
+    console.error('solicitarPremium: ' + error.name + ': ' + error.message);
+    response.status(500).send({ error: 'Ha ocurrido un error al solicitar participación.' });
+  }
+}
+
+
+
+
 
   async allQuedadasAdmin ({ auth, request, response, view }) {
     try {
