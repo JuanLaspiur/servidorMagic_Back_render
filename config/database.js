@@ -1,5 +1,3 @@
-'use strict'
-
 /** @type {import('@adonisjs/framework/src/Env')} */
 const Env = use('Env')
 
@@ -77,9 +75,11 @@ module.exports = {
       password: Env.get('DB_PASSWORD', ''),
       database: Env.get('DB_DATABASE', 'adonis')
     }
-  },mongodb: {
+  },
+  
+  mongodb: {
     client: 'mongodb',
-    connectionString: 'mongodb://localhost:27017/',
+    connectionString: 'mongodb://localhost:27017/', // Opcional: puedes usar connectionString o connection
     connection: {
       host: 'localhost',
       port: 27017,
@@ -96,5 +96,4 @@ module.exports = {
       }
     }
   }
-  
-  }
+};
