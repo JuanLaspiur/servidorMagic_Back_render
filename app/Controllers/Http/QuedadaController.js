@@ -167,68 +167,58 @@ class QuedadaController {
 }
 
 async allQuedadasPremium({ auth, request, response, view }) {
-  try {
-      const user = (await auth.getUser()).toJSON();
-      let quedadas = (await Quedada.query().where({ privacy: "Premium" }).fetch()).toJSON();
-      let filtradas = [];
+ try{    const user = (await auth.getUser()).toJSON();
+  console.log('depure user:', JSON.stringify(user));
 
-      for (let i = 0; i < quedadas.length; i++) {
-          let propio = (await User.find(quedadas[i].user_id));
+  let quedadas = (await Quedada.query().where({ privacy: "Premium" }).fetch()).toJSON();
+  console.log('depure quedadas:', JSON.stringify(quedadas));
 
-          // Verificar si el usuario propietario de la quedada existe
-          if (!propio) {
-              // El usuario propietario no existe, pasar a la siguiente quedada
-              continue;
-          }
+  let filtradas = [];
 
-          propio = propio.toJSON();
+  for (let i = 0; i < quedadas.length; i++) {
+      let propio = (await User.find(quedadas[i].user_id));
+      if (!propio) {
+          continue;
+      }
+      propio = propio.toJSON();
 
-          // Actualizar el estado de las quedadas que ya han pasado y cuyo estado es menor que 2
-          if (moment(quedadas[i].date) < moment() && quedadas[i].status < 2) {
-              quedadas[i].status = 2;
-              await Quedada.query().where('_id', quedadas[i]._id).update({ status: 2 });
+      if (moment(quedadas[i].date, "YYYY-MM-DD").isBefore(moment()) && quedadas[i].status < 2) {
+          quedadas[i].status = 2;
+          await Quedada.query().where('_id', quedadas[i]._id).update({ status: 2 });
 
-              // Crear una notificación si aún no existe
-              let exist = (await Notification.query().where({
-                  quedada: quedadas[i]._id.toString(),
+          let exist = (await Notification.query().where({
+              quedada: quedadas[i]._id.toString(),
+              user_id: quedadas[i].user_id,
+              title: 'Finalizó tu quedada'
+          }).first());
+
+          if (!exist) {
+              const notif = {
+                  visto: false,
                   user_id: quedadas[i].user_id,
-                  title: 'Finalizó tu quedada'
-              }).first());
-
-              if (!exist) {
-                  const notif = {
-                      visto: false,
-                      user_id: quedadas[i].user_id,
-                      quedada: quedadas[i]._id.toString(),
-                      title: 'Finalizó tu quedada',
-                      message: `${quedadas[i].name} ha finalizado`,
-                      ruta: `/muro_usuario`
-                  };
-                  await Notification.create(notif);
-                  Notifications.sendSystemNotification({ userId: quedadas[i].user_id, title: 'Finalizó tu quedada!', message: `${quedadas[i].name} ha finalizado` });
-              }
-          }
-
-          // Filtrar quedadas según la ciudad del usuario y otros criterios
-          if (propio.city === user.city && quedadas[i].asistentes.length < quedadas[i].limit && quedadas[i].status < 2) {
-              quedadas[i].userInfo = propio;
-              quedadas[i].animal_img = (await Animales.find(quedadas[i].userInfo.animal)).img;
-              quedadas[i].userInfo.city_name = (await City.findBy(propio.city)).name;
-              filtradas.push(quedadas[i]);
+                  quedada: quedadas[i]._id.toString(),
+                  title: 'Finalizó tu quedada',
+                  message: `${quedadas[i].name} ha finalizado`,
+                  ruta: `/muro_usuario`
+              };
+              await Notification.create(notif);
+              Notifications.sendSystemNotification({ userId: quedadas[i].user_id, title: 'Finalizó tu quedada!', message: `${quedadas[i].name} ha finalizado` });
           }
       }
 
-      // Ordenar quedadas filtradas por fecha
-      filtradas = filtradas.sort((a, b) => {
-          return moment(a.date, 'YYYY/MM/DD HH:mm').isAfter(moment(b.date, 'YYYY/MM/DD HH:mm')) ? 1 : -1;
-      });
+      if (propio.city === user.city && quedadas[i].asistentes.length < quedadas[i].limit && quedadas[i].status < 2) {
+          quedadas[i].userInfo = propio;
+          quedadas[i].animal_img = (await Animales.find(quedadas[i].userInfo.animal)).img;
+          quedadas[i].userInfo.city_name = (await City.findBy(propio.city)).name;
+          filtradas.push(quedadas[i]);
+      }
+  }
 
-      // Filtrar quedadas públicas o pertenecientes al usuario autenticado
-      const allQuedadasForUser = filtradas.filter((el) => el.privacy === 'Público' || el.user_id === user._id || el.asistentes.find((el) => el.user_id === user._id));
+  filtradas = filtradas.sort((a, b) => {
+      return moment(a.date, 'YYYY-MM-DD HH:mm').isAfter(moment(b.date, 'YYYY-MM-DD HH:mm')) ? 1 : -1;
+  });
 
-      // Enviar las quedadas filtradas como respuesta
-      response.send(allQuedadasForUser);
-  } catch (error) {
+  response.send(filtradas);} catch (error) {
       // Manejar errores
       console.error('index Quedada: ' + error.name + ': ' + error.message);
       response.status(500).send({ error: 'Ha ocurrido un error al obtener las quedadas.' });
@@ -363,7 +353,7 @@ async allQuedadasPremium({ auth, request, response, view }) {
       })
       response.send(filtradas)
     } catch (error) {
-      console.error('eventros asistidos: ' + error.name + ': ' + error.message);
+      console.error('console error quedadas premium : ' + error.name + ': ' + error.message);
     }
   }
 
