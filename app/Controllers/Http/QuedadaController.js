@@ -368,8 +368,8 @@ class QuedadaController {
 
   async gestionarSolicitudParticipacion({ request, params, response }) {
     try {
-      const { status } = request.body;
-      const userId = request.currentUser._id;
+      const { status, user_id } = request.body;
+      const userId = user_id;
   
       // Obtener la quedada específica por su ID
       const quedada = await Quedada.find(params.id);
