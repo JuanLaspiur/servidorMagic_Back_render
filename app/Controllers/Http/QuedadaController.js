@@ -218,7 +218,6 @@ class QuedadaController {
     console.log('entre ')
     try {
       const user = (await auth.getUser()).toJSON();
-      console.log("depure user:", JSON.stringify(user));
 
       let quedadas = (
         await Quedada.query().where({ privacy: "Premium" }).fetch()
@@ -309,7 +308,6 @@ class QuedadaController {
       let send;
       if (!quedada) {
         send = { send: 3 }; // Enviar un objeto con el campo send
-        console.log('depure_: Enviando No hay queda {send:3}')
         return response.send(send);
       }
   
@@ -321,7 +319,6 @@ class QuedadaController {
       for (let i = 0; i < quedada.solicitudesDeParticipacion.length; i++) {
         const solicitud = quedada.solicitudesDeParticipacion[i];
         if (solicitud === userIdString) {
-          console.log('depure_: Enviando ya ha enviado la solicitud {send:2}')
           send = { send: 2 }; // Enviar un objeto con el campo send
           return response.send(send);
         }
@@ -329,7 +326,6 @@ class QuedadaController {
       quedada.solicitudesDeParticipacion.push(userIdString);
       await quedada.save();
       send = { send: 1 }; // Enviar un objeto con el campo send
-      console.log('depure_: Enviando la solicitud {send:1}')
       response.send(send);
     } catch (error) {
 
@@ -394,11 +390,15 @@ class QuedadaController {
           rating_id: null
         });
 
-        Notifications.sendSystemNotification({
-          userId: userId,
+       const notif = {
+          visto: false,
+          user_id: userId,
+          quedada: quedada._id.toString(),
           title: "¡Tu solicitud premium ha sido aceptada!",
-          message: `Tu solicitud de participación ha sido aceptada para la quedada Premium ${quedada.name}`,
-        }); 
+          message: `Haz sido invitado a la quedada quedada Premium ${quedada.name}`,
+          ruta: `/quedada/${quedada._id}`,
+        };
+        await Notification.create(notif);
 
       }
   
