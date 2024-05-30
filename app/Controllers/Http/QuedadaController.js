@@ -215,6 +215,7 @@ class QuedadaController {
   }
 
   async allQuedadasPremium({ auth, request, response, view }) {
+    console.log('entre ')
     try {
       const user = (await auth.getUser()).toJSON();
       console.log("depure user:", JSON.stringify(user));
@@ -222,7 +223,6 @@ class QuedadaController {
       let quedadas = (
         await Quedada.query().where({ privacy: "Premium" }).fetch()
       ).toJSON();
-      console.log("depure quedadas:", JSON.stringify(quedadas));
 
       let filtradas = [];
 
@@ -301,15 +301,18 @@ class QuedadaController {
         .send({ error: "Ha ocurrido un error al obtener las quedadas." });
     }
   }
-  async solicitarPremium({ auth, params }, response) {
+  async solicitarPremium({ auth, params, response}) {
+    console.log('Entre al metodo ')
     try {
       const user = await auth.getUser();
       const quedada = await Quedada.find(params.id);
-
+      let send;
       if (!quedada) {
-        return response.status(404).send({ message: "Quedada not found" });
+        send = { send: 3 }; // Enviar un objeto con el campo send
+        console.log('depure_: Enviando No hay queda {send:3}')
+        return response.send(send);
       }
-
+  
       if (!quedada.solicitudesDeParticipacion) {
         quedada.solicitudesDeParticipacion = [];
       }
@@ -318,22 +321,25 @@ class QuedadaController {
       for (let i = 0; i < quedada.solicitudesDeParticipacion.length; i++) {
         const solicitud = quedada.solicitudesDeParticipacion[i];
         if (solicitud === userIdString) {
-          return response
-            .status(400)
-            .send({ message: "Ya has solicitado participar en esta quedada." });
+          console.log('depure_: Enviando ya ha enviado la solicitud {send:2}')
+          send = { send: 2 }; // Enviar un objeto con el campo send
+          return response.send(send);
         }
       }
       quedada.solicitudesDeParticipacion.push(userIdString);
       await quedada.save();
-
-      response.send({ message: "Solicitud de participación enviada", quedada });
+      send = { send: 1 }; // Enviar un objeto con el campo send
+      console.log('depure_: Enviando la solicitud {send:1}')
+      response.send(send);
     } catch (error) {
+
       console.error("solicitarPremium: " + error.name + ": " + error.message);
-      response
-        .status(500)
-        .send({ error: "Ha ocurrido un error al solicitar participación." });
+      const send = { send: 0 }; // Enviar un objeto con el campo send
+      response.send(send);
     }
   }
+  
+  
 
   async getSolicitudesParticipacion({ params, response }) {
     try {

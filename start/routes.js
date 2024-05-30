@@ -32,6 +32,8 @@ const addPrefixToGroup = (group) => {
 addPrefixToGroup(
   Route.group(() => {
     //
+    
+
     Route.post("uploadInsignaImg", "InsignaController.addImg");
 
     // Insignas
