@@ -377,33 +377,33 @@ class QuedadaController {
       const { status, user_id } = request.body;
       const userId = user_id;
   
-      // Obtener la quedada específica por su ID
       const quedada = await Quedada.find(params.id);
   
-      // Verificar si la quedada existe
       if (!quedada) {
         return response.status(404).send({ message: "Quedada not found" });
       }
   
-      // Verificar si el usuario ha enviado una solicitud de participación
       if (!quedada.solicitudesDeParticipacion.includes(userId)) {
         return response.status(400).send({ message: "No hay solicitud de participación para este usuario en esta quedada" });
       }
-  
-      // Si se aprueba la solicitud
+      // Quiero que aqui, en caso de ser status = true envies una notificacion al userId
       if (status === true) {
         quedada.asistentes.push({
           user_id: userId,
           asistencia: false,
           rating_id: null
         });
+
+        Notifications.sendSystemNotification({
+          userId: userId,
+          title: "¡Tu solicitud premium ha sido aceptada!",
+          message: `Tu solicitud de participación ha sido aceptada para la quedada Premium ${quedada.name}`,
+        }); 
+
       }
   
-      // Eliminar el ID del usuario de la lista de solicitudes de participación
       quedada.solicitudesDeParticipacion = quedada.solicitudesDeParticipacion.filter(id => id !== userId);
-  
       await quedada.save();
-  
       response.send({ message: "Solicitud de participación gestionada exitosamente" });
     } catch (error) {
       console.error('Error al gestionar solicitud de participación:', error);
