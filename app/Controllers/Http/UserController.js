@@ -1136,6 +1136,22 @@ class UserController {
       return response.status(500).send({ error: "Error al modificar el estado del tutorial" });
     }
   }
+
+  async privacidadEdad ({request, response}) {
+    try {
+      const { status, userId } =  request.body;
+      const user = await User.find(userId);
+      if (!user) {
+        return response.status(404).send({error:"Usuario no encontrado"})
+      }
+      user.edadPriv = status;
+      await user.save();
+      return response.status(200).send({ success: true, message: "Configuración de privacidad de la edad actualizada exitosamente" });
+
+    } catch {
+      return response.status(500).send({ error: "Error al actualizar la configuración de privacidad de la edad" });
+    }
+  }
   
   
   

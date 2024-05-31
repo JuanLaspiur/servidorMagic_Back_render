@@ -77,6 +77,7 @@ addPrefixToGroup(
         success: true,
       };
     });
+    Route.put('updateAgePrivacity',"UserController.privacidadEdad")
     Route.put('users/:userId/tutorial', 'UserController.modificarTutorial')
     Route.post("verificar_user", "UserController.verifyUser");
     Route.post("register", "UserController.register");
