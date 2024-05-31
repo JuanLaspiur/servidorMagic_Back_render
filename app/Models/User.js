@@ -3,7 +3,7 @@ const Model = use('Model')
 
 class User extends Model {
   static get fillable() {
-    return ['email', 'password', 'deleted', 'dateDeleted', 'tutorial']
+    return ['email', 'password', 'deleted', 'dateDeleted', 'tutorial', 'edadPriv']
   }
 
   static fieldValidationRules() {
@@ -23,9 +23,10 @@ class User extends Model {
       }
     })
 
-    // Inicializar el atributo 'tutorial' en 'false' al crear un nuevo usuario
+    // Inicializar los atributos 'tutorial' y 'edadPriv' en 'false' al crear un nuevo usuario
     this.addHook('beforeCreate', async (userInstance) => {
       userInstance.tutorial = false;
+      userInstance.edadPriv = false;
     })
   }
 
