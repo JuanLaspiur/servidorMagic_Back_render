@@ -1141,6 +1141,7 @@ class UserController {
     try {
       const { status } =  request.body;
       const {userId} = request.params
+
       const user = await User.find(userId);
       if (!user) {
         return response.status(404).send({error:"Usuario no encontrado"})
