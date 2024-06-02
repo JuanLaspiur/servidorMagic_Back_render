@@ -156,7 +156,7 @@ class QuedadaController {
               visto: false,
               user_id: quedadas[i].user_id,
               quedada: quedadas[i]._id.toString(),
-              title: "Finalizó tu quedada",
+              title: "Finalizó tu quedada haz Click para Cargar las Fotos",
               message: `${quedadas[i].name} ha finalizado`,
               ruta: `/muro_usuario`,
             };
@@ -211,6 +211,30 @@ class QuedadaController {
       response
         .status(500)
         .send({ error: "Ha ocurrido un error al obtener las quedadas." });
+    }
+  }
+
+  async crearComentarioQuedadaTerminada({ auth, request, response }) {
+    try {
+      // Obtener el usuario autenticado
+      const user = await auth.getUser();
+      
+      const { quedada_id, comentario } = request.only(['quedada_id', 'comentario']);
+
+      // Verificar si la quedada existe
+      const quedada = await Quedada.find(quedada_id);
+      if (!quedada) {
+        return response.status(404).send({ message: 'Quedada no encontrada' });
+      }
+
+      // Guardar el comentario en la quedada con la referencia al usuario
+      quedada.comentarios_quedada_terminada.push({ user_id: user.id, comentario });
+      await quedada.save();
+
+      return response.status(201).send({ message: 'Comentario creado con éxito' });
+    } catch (error) {
+      console.error(error);
+      return response.status(500).send({ message: 'Error al crear el comentario' });
     }
   }
 
