@@ -182,6 +182,9 @@ addPrefixToGroup(
     Route.get("all_quedadas", "QuedadaController.allQuedadas");
     Route.get("all_quedadas_premium", "QuedadaController.allQuedadasPremium");
     
+    Route.post("crearComentarioQuedadaTerminada", "QuedadaController.crearComentarioQuedadaTerminada")
+    Route.post("cargarImagenesQuedadaTerminada", "QuedadaController.cargarImagenesQuedadaTerminada")
+    Route.get("getImagenesQuedadaTerminada/:quedada_id","QuedadaController.getImagenesQuedadaTerminada")
 
     Route.post("solicitarPremium/:id","QuedadaController.solicitarPremium")
     Route.get('getSolicitudesParticipacion/:id','QuedadaController.getSolicitudesParticipacion')

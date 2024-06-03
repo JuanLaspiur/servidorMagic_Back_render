@@ -36,6 +36,7 @@
     "mongo-xlsx": "^1.0.12",
     "mongodb": "2.x",
     "randomatic": "^3.1.1",
+    "sharp": "^0.33.4",
     "socket.io": "^4.6.1",
     "uuid": "^9.0.1"
   },

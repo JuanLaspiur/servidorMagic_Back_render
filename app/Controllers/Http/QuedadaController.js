@@ -10,9 +10,11 @@ const Rating = use("App/Models/Rating");
 const Animales = use("App/Models/Animale");
 const Notification = use("App/Models/Notification");
 const Notifications = use("App/Functions/Notifications/Notification");
+const sharp = require('sharp');
 const moment = require("moment");
 moment.locale("es");
 var randomize = require("randomatic");
+const fs = use("fs/promises");
 
 /** @typedef {import('@adonisjs/framework/src/Request')} Request */
 /** @typedef {import('@adonisjs/framework/src/Response')} Response */
@@ -213,30 +215,111 @@ class QuedadaController {
         .send({ error: "Ha ocurrido un error al obtener las quedadas." });
     }
   }
+/** crear comentario quedada terminada */
+async crearComentarioQuedadaTerminada({ request, response }) {
+  try {
+    const { quedada_id, comentario, userID } = request.only(['quedada_id', 'comentario', 'userID']);
 
-  async crearComentarioQuedadaTerminada({ auth, request, response }) {
-    try {
-      // Obtener el usuario autenticado
-      const user = await auth.getUser();
-      
-      const { quedada_id, comentario } = request.only(['quedada_id', 'comentario']);
-
-      // Verificar si la quedada existe
-      const quedada = await Quedada.find(quedada_id);
-      if (!quedada) {
-        return response.status(404).send({ message: 'Quedada no encontrada' });
-      }
-
-      // Guardar el comentario en la quedada con la referencia al usuario
-      quedada.comentarios_quedada_terminada.push({ user_id: user.id, comentario });
-      await quedada.save();
-
-      return response.status(201).send({ message: 'Comentario creado con éxito' });
-    } catch (error) {
-      console.error(error);
-      return response.status(500).send({ message: 'Error al crear el comentario' });
+    // Verificar si el usuario existe
+    const user = await User.find(userID);
+    if (!user) {
+      return response.status(404).send({ message: 'Usuario no encontrado' });
     }
+    
+    // Verificar si la quedada existe
+    const quedada = await Quedada.find(quedada_id);
+    if (!quedada) {
+      return response.status(404).send({ message: 'Quedada no encontrada' });
+    }
+
+    // Guardar el comentario en la quedada con la referencia al usuario
+    quedada.comentarios_quedada_terminada.push({ user_id: user.id, comentario });
+    await quedada.save();
+
+    return response.status(201).send({ message: 'Comentario creado con éxito' });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).send({ message: 'Error al crear el comentario' });
   }
+}
+
+
+/* subir fotos  */
+async cargarImagenesQuedadaTerminada({ request, response }) {
+  try {
+    const imagenesQuedada = request.file("imagenes_quedada", {
+      types: ["image"],
+    });
+
+    if (!imagenesQuedada) {
+      return response.status(400).send({ message: 'No se encontraron imágenes para cargar' });
+    }
+
+    // Directorio de almacenamiento
+    const storagePath = Helpers.appRoot("storage/uploads/quedadas_terminadas");
+
+    // Crear el directorio si no existe
+    if (!await fs.exists(storagePath)) {
+      await mkdirp(storagePath);
+    }
+
+    await imagenesQuedada.moveAll(storagePath, (file) => ({
+      name: `${file.clientName}-${Date.now()}`,
+    }));
+
+    if (!imagenesQuedada.movedAll()) {
+      return response.status(500).send(imagenesQuedada.errors());
+    }
+
+    const imagenesConvertidas = imagenesQuedada.movedList().map(async (image) => {
+      const outputPath = `${storagePath}/${image.fileName}.webp`;
+      await sharp(image.filePath).toFormat('webp').toFile(outputPath);
+      return outputPath;
+    });
+
+    return response.status(201).send({ message: 'Imágenes cargadas y convertidas a WebP con éxito' });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).send({ message: 'Error al cargar y convertir las imágenes' });
+  }
+}
+
+/* obener fotos quedada terminada */
+async getImagenesQuedadaTerminada({ params, response }) {
+  try {
+    const { quedada_id } = params;
+
+    // Buscar la quedada por su ID
+    const quedada = await Quedada.find(quedada_id);
+    if (!quedada) {
+      return response.status(404).send({ message: 'Quedada no encontrada' });
+    }
+
+    // Obtener las imágenes asociadas a la quedada, si existen
+    const imagenes = quedada.imagenes_quedada_terminada || [];
+    
+    // Si no hay imágenes asociadas, devolver una respuesta indicando que no se encontraron imágenes
+    if (imagenes.length === 0) {
+      return response.status(404).send({ message: 'No se encontraron imágenes asociadas a la quedada terminada' });
+    }
+    
+    // Leer las imágenes del sistema de archivos y enviarlas en la respuesta
+    const imagenesData = await Promise.all(imagenes.map(async (imagen) => {
+      const imagePath = path.join(Helpers.appRoot(), 'storage', 'uploads', 'quedadas_terminadas', imagen);
+      const imageData = await fs.readFile(imagePath);
+      return {
+        nombre: imagen, // Opcional: podrías incluir el nombre de la imagen en la respuesta
+        data: imageData
+      };
+    }));
+
+    return response.status(200).send({ imagenes: imagenesData });
+  } catch (error) {
+    console.error(error);
+    return response.status(500).send({ message: 'Error al obtener las imágenes de la quedada' });
+  }
+}
+
 
   async allQuedadasPremium({ auth, request, response, view }) {
     console.log('entre ')
